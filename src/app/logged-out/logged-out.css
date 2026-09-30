@@ -1,0 +1,33 @@
+.logged-out-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: 24px;
+}
+.logged-out-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  max-width: 380px;
+  text-align: center;
+}
+.logged-out-card .brand-mark {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--accent);
+  margin-bottom: 22px;
+}
+.logged-out-card h1 {
+  font-size: 21px;
+  margin-bottom: 10px;
+}
+.logged-out-card p {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 26px;
+}

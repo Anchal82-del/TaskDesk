@@ -1,0 +1,90 @@
+<div class="page">
+  <header class="top-header">
+    <div class="header-left">
+      <button
+        type="button"
+        class="hamburger-btn"
+        (click)="toggleSidebar()"
+        [attr.aria-label]="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+      <div class="brand-mark">TaskDesk</div>
+    </div>
+    <button class="btn btn-ghost btn-sm" type="button" (click)="openLogoutConfirm()">Logout</button>
+  </header>
+
+  <div class="app-shell" [class.sidebar-collapsed]="sidebarCollapsed">
+    <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
+      <nav class="sidebar-nav">
+        <a class="nav-item" routerLink="/dashboard" routerLinkActive="active">
+          <svg
+            class="ico"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+          <span class="nav-label">Tasks</span>
+        </a>
+        <a class="nav-item" routerLink="/users" routerLinkActive="active">
+          <svg
+            class="ico"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <circle cx="9" cy="8" r="3.2" />
+            <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+            <circle cx="17" cy="9" r="2.6" />
+            <path d="M15.5 14.3c2.6.4 4.5 2.6 4.5 5.2" />
+          </svg>
+          <span class="nav-label">Users</span>
+        </a>
+        <a class="nav-item" routerLink="/settings" routerLinkActive="active">
+          <svg
+            class="ico"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.9 2.9l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.6V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.9-2.9l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.6-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.6-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.9-2.9l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.6V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.6 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.9 2.9l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.6 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.6 1z"
+            />
+          </svg>
+          <span class="nav-label">Settings</span>
+        </a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
+
+@if (isLogoutConfirmOpen) {
+<app-confirm-dialog
+  title="Log out of TaskDesk?"
+  message="You'll need to sign in again to access your tasks. Any unsaved changes will be lost."
+  confirmLabel="Log out"
+  [danger]="true"
+  [isBusy]="isLoggingOut"
+  (confirmed)="confirmLogout()"
+  (cancelled)="cancelLogout()"
+>
+</app-confirm-dialog>
+}

@@ -1,0 +1,15 @@
+.confirm-dialog h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+.confirm-dialog p {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.55;
+  margin-bottom: 22px;
+}
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}

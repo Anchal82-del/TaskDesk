@@ -1,0 +1,134 @@
+<div class="modal-overlay">
+  <button
+    type="button"
+    class="modal-backdrop"
+    tabindex="-1"
+    aria-label="Close dialog"
+    (click)="onCancel()"
+  ></button>
+
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="task-form-title">
+    <div class="modal-header">
+      <h2 id="task-form-title">{{ isEditMode ? 'Edit task' : 'New task' }}</h2>
+      <button class="modal-close" type="button" (click)="onCancel()" aria-label="Close">
+        &times;
+      </button>
+    </div>
+
+    <form [formGroup]="taskForm" (ngSubmit)="onSubmit()" novalidate>
+      <div class="field">
+        <label for="title">Title <span class="required-mark">*</span></label>
+        <input
+          class="input"
+          [class.input-error]="isInvalid('title')"
+          type="text"
+          id="title"
+          formControlName="title"
+          placeholder="e.g. Set up project repo"
+        />
+        @if (isInvalid('title')) {
+        <div class="field-error">Title is required.</div>
+        }
+      </div>
+
+      <div class="form-grid-2">
+        <div class="field">
+          <label for="priority">Priority <span class="required-mark">*</span></label>
+          <select
+            class="input"
+            [class.input-error]="isInvalid('priority')"
+            id="priority"
+            formControlName="priority"
+          >
+            <option value="" disabled>Select priority</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+          @if (isInvalid('priority')) {
+          <div class="field-error">Priority is required.</div>
+          }
+        </div>
+        <div class="field">
+          <label for="status">Status <span class="required-mark">*</span></label>
+          <select
+            class="input"
+            [class.input-error]="isInvalid('status')"
+            id="status"
+            formControlName="status"
+          >
+            <option value="" disabled>Select status</option>
+            <option value="todo">To do</option>
+            <option value="progress">In progress</option>
+            <option value="done">Done</option>
+          </select>
+          @if (isInvalid('status')) {
+          <div class="field-error">Status is required.</div>
+          }
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="field">
+          <label for="reporterId">Reporter <span class="required-mark">*</span></label>
+          <select
+            class="input"
+            [class.input-error]="isInvalid('reporterId')"
+            id="reporterId"
+            formControlName="reporterId"
+          >
+            <option [ngValue]="null" disabled>Select reporter</option>
+            @for (u of users; track u.id) {
+            <option [ngValue]="u.id">{{ u.name }}</option>
+            }
+          </select>
+          @if (isInvalid('reporterId')) {
+          <div class="field-error">Reporter is required.</div>
+          }
+        </div>
+        <div class="field">
+          <label for="assigneeId">Assignee <span class="required-mark">*</span></label>
+          <select
+            class="input"
+            [class.input-error]="isInvalid('assigneeId')"
+            id="assigneeId"
+            formControlName="assigneeId"
+          >
+            <option [ngValue]="null" disabled>Select assignee</option>
+            @for (u of users; track u.id) {
+            <option [ngValue]="u.id">{{ u.name }}</option>
+            }
+          </select>
+          @if (isInvalid('assigneeId')) {
+          <div class="field-error">Assignee is required.</div>
+          }
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="projectId">Project <span class="required-mark">*</span></label>
+        <select
+          class="input"
+          [class.input-error]="isInvalid('projectId')"
+          id="projectId"
+          formControlName="projectId"
+        >
+          <option [ngValue]="null" disabled>Select project</option>
+          @for (p of projects; track p.id) {
+          <option [ngValue]="p.id">{{ p.name }}</option>
+          }
+        </select>
+        @if (isInvalid('projectId')) {
+        <div class="field-error">Project is required.</div>
+        }
+      </div>
+
+      <p class="required-note">* Required field</p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save task</button>
+      </div>
+    </form>
+  </div>
+</div>

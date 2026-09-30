@@ -1,1 +1,299 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  --ink: #1f2430;
+  --ink-soft: #5b6270;
+  --ink-faint: #9298a3;
+  --bg: #faf9f6;
+  --surface: #ffffff;
+  --border: #e7e3dc;
+  --border-soft: #f0ede7;
+
+  --accent: #0e9488;
+  --accent-dark: #0b7a70;
+  --accent-soft: #dcf3ef;
+
+  --success: #2f9e6e;
+  --success-soft: #e1f5ec;
+  --warning: #d6952b;
+  --warning-soft: #fbf0dc;
+  --danger: #d14343;
+  --danger-soft: #fbe4e4;
+  --slate: #6b7280;
+  --slate-soft: #eceef1;
+
+  --font-display: 'Sora', 'Segoe UI', sans-serif;
+  --font-body: 'Inter', 'Segoe UI', sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  --sidebar-bg: #1f2430;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+p {
+  margin: 0;
+}
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-weight: 600;
+  font-size: 14px;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.05s ease;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--accent-dark);
+}
+.btn-block {
+  width: 100%;
+}
+
+/* ---------- form fields ---------- */
+.field {
+  margin-bottom: 18px;
+}
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+.input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  outline: none;
+}
+
+.btn-sm {
+  padding: 7px 14px;
+  font-size: 13px;
+}
+
+:root[data-theme='dark'] {
+  --ink: #f4f5f7;
+  --ink-soft: #b8bcc4;
+  --ink-faint: #7d828d;
+  --bg: #14171d;
+  --surface: #1d2129;
+  --border: #2b303a;
+  --border-soft: #262a32;
+  --accent-soft: #123d38;
+  --success-soft: #123625;
+  --warning-soft: #3a2c12;
+  --danger-soft: #3a1f1f;
+  --slate-soft: #262a32;
+}
+
+/* ---------- shared button variants ---------- */
+.btn-ghost {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--ink);
+}
+.btn-ghost:hover {
+  background: var(--border-soft);
+  border-color: var(--ink-faint);
+}
+.btn-ghost:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+.btn-danger:hover {
+  background: #b73a3a;
+}
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  box-shadow: 0 1px 2px rgba(14, 148, 136, 0.25);
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ---------- shared modal chrome (used by task-form, task-detail, confirm-dialog) ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 50;
+}
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding: 0;
+  background: rgba(10, 12, 16, 0.55);
+  cursor: default;
+}
+.modal,
+.confirm-dialog {
+  position: relative;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  padding: 28px;
+  animation: modalIn 0.16s ease;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+.modal {
+  max-width: 460px;
+}
+.confirm-dialog {
+  max-width: 380px;
+  padding: 26px;
+}
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.modal-header h2 {
+  font-size: 19px;
+}
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px;
+  border-radius: 6px;
+}
+.modal-close:hover {
+  color: var(--ink);
+  background: var(--border-soft);
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.required-mark {
+  color: var(--danger);
+  margin-left: 2px;
+  font-weight: 600;
+}
+.required-note {
+  font-size: 12px;
+  color: var(--ink-faint);
+  margin-top: 2px;
+  margin-bottom: 14px;
+}
+.input.input-error {
+  border-color: var(--danger);
+}
+.input.input-error:focus {
+  box-shadow: 0 0 0 3px var(--danger-soft);
+}
+.field-error {
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--danger);
+}
+textarea.input {
+  resize: vertical;
+  min-height: 80px;
+}

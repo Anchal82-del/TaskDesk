@@ -1,59 +1,65 @@
-# Taskdesk
+# TaskDesk
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.1.8.
+A task management application currently being developed using Angular.
 
-## Development server
+## Project Status
 
-To start a local development server, run:
+**Work in Progress**
 
-```bash
-ng serve
-```
+The current stage focuses on building and refining the frontend application. The backend and database integration will be implemented in later stages.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Current Implementation
 
-## Code scaffolding
+The current Angular frontend includes:
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- Login page with username and password validation
+- Dashboard task list
+- Task search
+- Status and priority filtering
+- Task creation
+- Task editing
+- Task deletion
+- Task details view
+- Inline description editing
+- Task statistics
+- Required field validation
+- Sidebar navigation
+- Sidebar collapse functionality
+- Logout flow
+- Logged-out page
+- Responsive UI
+- Angular services and component-based structure
+- Angular `@if` and `@for` template control flow
 
-```bash
-ng generate component component-name
-```
+## Planned Development
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+The next stages will include:
 
-```bash
-ng generate --help
-```
+- Node.js and Express REST API
+- Task CRUD endpoints
+- Request validation and error handling
+- MongoDB integration
+- Connecting the Angular frontend to the backend APIs
+- API documentation using Swagger/OpenAPI
+- Final testing and documentation
 
-## Building
+## Technology Stack
 
-To build the project run:
+### Current
 
-```bash
-ng build
-```
+- Angular
+- TypeScript
+- HTML
+- CSS
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+### Planned
 
-## Running unit tests
+- Node.js
+- Express.js
+- MongoDB
+- REST API
+- Swagger/OpenAPI
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Note
 
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+This repository is currently being used as a development and mentor-review repository. The application is not yet complete and the implementation may continue to change as development progresses.

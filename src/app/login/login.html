@@ -1,0 +1,73 @@
+<div class="login-page">
+  <div class="login-visual">
+    <div class="brand-mark">TaskDesk</div>
+    <div class="visual-copy">
+      <h1>One place for everything on your plate.</h1>
+      <p>
+        Add tasks, set their priority, and move them from to-do to done without losing track of
+        anything.
+      </p>
+    </div>
+    <div class="visual-footer">&copy; 2026 TaskDesk</div>
+  </div>
+
+  <div class="login-form-panel">
+    <!-- <div class="login-card">
+        <h2>Welcome back</h2> -->
+
+    <div class="login-card">
+      @if (errorMessage) {
+      <div class="login-error">{{ errorMessage }}</div>
+      }
+
+      <h2>Welcome back</h2>
+
+      <p class="required-note">* Required field</p>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+        <div class="field">
+          <label for="username">Username <span class="required-mark">*</span></label>
+          <input
+            class="input"
+            type="text"
+            id="username"
+            formControlName="username"
+            placeholder="e.g. uxxxxxx"
+          />
+        </div>
+
+        <div class="field">
+          <label for="password">Password <span class="required-mark">*</span></label>
+          <div class="password-wrap">
+            <input
+              class="input"
+              [type]="showPassword ? 'text' : 'password'"
+              id="password"
+              formControlName="password"
+              placeholder="Enter your password"
+            />
+            <button type="button" class="password-toggle" (click)="togglePassword()">
+              {{ showPassword ? 'Hide' : 'Show' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="row-between">
+          <label class="checkbox-row">
+            <input type="checkbox" formControlName="remember" /> Remember me
+          </label>
+          <a href="#" class="link-muted" (click)="$event.preventDefault()">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Signing in…' : 'Sign in' }}
+        </button>
+      </form>
+
+      <p class="form-note">
+        This is a UI mockup — sign-in, "Remember me" and "Forgot password" aren't connected to a
+        server yet.
+      </p>
+    </div>
+  </div>
+</div>

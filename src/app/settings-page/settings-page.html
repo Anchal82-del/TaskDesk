@@ -1,0 +1,53 @@
+<div class="topbar">
+  <div>
+    <h1>Settings</h1>
+    <div class="sub">Personalize how TaskDesk looks and behaves for you.</div>
+  </div>
+</div>
+
+<div class="settings-section">
+  <h2>Appearance</h2>
+  <div class="setting-row">
+    <div>
+      <div class="setting-label">Theme</div>
+      <div class="setting-desc">Switch between a light and dark interface.</div>
+    </div>
+    <div class="theme-toggle">
+      <button type="button" [class.active]="theme() === 'light'" (click)="setTheme('light')">
+        Light
+      </button>
+      <button type="button" [class.active]="theme() === 'dark'" (click)="setTheme('dark')">
+        Dark
+      </button>
+    </div>
+  </div>
+
+  <!-- <div class="setting-row">
+    <div>
+      <div class="setting-label">Compact rows</div>
+      <div class="setting-desc">Show more tasks per screen with tighter row spacing.</div>
+    </div>
+    <label class="switch">
+      <input type="checkbox" [checked]="compactRows()" (change)="onCompactRowsChange($event)" />
+      <span class="switch-track"></span>
+    </label>
+  </div>
+</div> -->
+
+  <div class="settings-section">
+    <h2>Notifications</h2>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Email notifications</div>
+        <div class="setting-desc">Get notified when a task is assigned to you.</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" disabled />
+        <span class="switch-track"></span>
+      </label>
+    </div>
+    <p class="settings-note">
+      Notifications aren't connected to a server yet — this is a preview of the setting.
+    </p>
+  </div>
+</div>

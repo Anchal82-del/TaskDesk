@@ -1,0 +1,142 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.top-header {
+  height: 56px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.hamburger-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  flex-shrink: 0;
+}
+.hamburger-btn svg {
+  width: 19px;
+  height: 19px;
+}
+.hamburger-btn:hover {
+  background: var(--border-soft);
+  color: var(--ink);
+}
+.top-header .brand-mark {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  flex: 1;
+  min-height: 0;
+  transition: grid-template-columns 0.18s ease;
+}
+.app-shell.sidebar-collapsed {
+  grid-template-columns: 68px 1fr;
+}
+
+.sidebar {
+  background: var(--sidebar-bg);
+  color: #c7cbd4;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #c7cbd4;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.nav-item .ico {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+.nav-item.active {
+  background: var(--accent);
+  color: #fff;
+}
+.nav-item.active .ico {
+  opacity: 1;
+}
+.sidebar.collapsed .nav-label {
+  display: none;
+}
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+}
+
+.main {
+  min-width: 0;
+  width: 100%;
+  padding: 32px 40px 72px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+@media (max-width: 900px) {
+  .app-shell,
+  .app-shell.sidebar-collapsed {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 16px;
+  }
+  .sidebar-nav {
+    flex-direction: row;
+    gap: 4px;
+  }
+  .sidebar-toggle {
+    display: none;
+  }
+  .main {
+    padding: 36px 48px 60px;
+    max-width: 1180px;
+    overflow-x: hidden;
+  }
+}

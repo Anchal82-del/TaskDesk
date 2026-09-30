@@ -1,0 +1,21 @@
+<div class="topbar">
+  <div>
+    <h1>Users</h1>
+    <div class="sub">Everyone with access to TaskDesk.</div>
+  </div>
+</div>
+
+<div class="users-list">
+  <div class="users-list-head">
+    <div>Name</div>
+    <div>Username</div>
+    <div>Email</div>
+  </div>
+  @for (u of users; track u.id) {
+  <div class="users-row">
+    <div class="user-name"><span class="avatar">{{ u.name.charAt(0) }}</span>{{ u.name }}</div>
+    <div>{{ u.username }}</div>
+    <div>{{ u.email }}</div>
+  </div>
+  }
+</div>

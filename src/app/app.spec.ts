@@ -4,9 +4,8 @@ import { App } from './app';
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App],
-    })
-      .compileComponents();
+      imports: [App]
+    }).compileComponents();
   });
 
   it('should create the app', () => {
