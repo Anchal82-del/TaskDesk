@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Task } from './task.model';
+import { Task, TaskInput } from '@app/task.model';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +13,7 @@ export class TaskService {
       description: 'New banner for the spring campaign.',
       priority: 'medium',
       status: 'todo',
-      reporterId: 2,
+      reviewerId: 2,
       assigneeId: 1,
       projectId: 1
     },
@@ -23,7 +23,7 @@ export class TaskService {
       description: 'Password field accepts empty spaces.',
       priority: 'high',
       status: 'progress',
-      reporterId: 3,
+      reviewerId: 3,
       assigneeId: 2,
       projectId: 3
     },
@@ -33,7 +33,7 @@ export class TaskService {
       description: 'Summarize changes for v1.2.',
       priority: 'low',
       status: 'todo',
-      reporterId: 1,
+      reviewerId: 1,
       assigneeId: 3,
       projectId: 2
     },
@@ -43,7 +43,7 @@ export class TaskService {
       description: 'Check the new filtering logic.',
       priority: 'high',
       status: 'progress',
-      reporterId: 4,
+      reviewerId: 4,
       assigneeId: 4,
       projectId: 3
     },
@@ -53,7 +53,7 @@ export class TaskService {
       description: 'Add screenshots for the new dashboard.',
       priority: 'low',
       status: 'done',
-      reporterId: 2,
+      reviewerId: 2,
       assigneeId: 1,
       projectId: 2
     },
@@ -63,7 +63,7 @@ export class TaskService {
       description: 'Book a room and prep discussion topics.',
       priority: 'medium',
       status: 'done',
-      reporterId: 1,
+      reviewerId: 1,
       assigneeId: 2,
       projectId: 1
     },
@@ -73,7 +73,7 @@ export class TaskService {
       description: 'Automated build and test on every push.',
       priority: 'high',
       status: 'todo',
-      reporterId: 4,
+      reviewerId: 4,
       assigneeId: 3,
       projectId: 3
     },
@@ -83,7 +83,7 @@ export class TaskService {
       description: 'Run an automated and manual accessibility pass.',
       priority: 'medium',
       status: 'todo',
-      reporterId: 3,
+      reviewerId: 3,
       assigneeId: 4,
       projectId: 1
     }
@@ -96,13 +96,13 @@ export class TaskService {
     return this.tasksSubject.asObservable();
   }
 
-  addTask(data: Omit<Task, 'id'>): void {
+  addTask(data: TaskInput): void {
     const newTask: Task = { id: this.nextId++, ...data };
     this.tasks = [...this.tasks, newTask];
     this.tasksSubject.next(this.tasks);
   }
 
-  updateTask(id: number, data: Omit<Task, 'id'>): void {
+  updateTask(id: number, data: TaskInput): void {
     this.tasks = this.tasks.map((t) => (t.id === id ? { id, ...data } : t));
     this.tasksSubject.next(this.tasks);
   }

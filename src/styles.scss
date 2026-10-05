@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
-
 :root {
   --ink: #1f2430;
   --ink-soft: #5b6270;
@@ -215,16 +213,24 @@ button {
   background: var(--surface);
   border-radius: var(--radius-lg);
   width: 100%;
-  padding: 28px;
   animation: modalIn 0.16s ease;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
 }
 .modal {
-  max-width: 460px;
+  max-width: 560px;
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.modal form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 .confirm-dialog {
-  max-width: 380px;
-  padding: 26px;
+  max-width: 420px;
+  padding: 22px 24px 24px;
 }
 @keyframes modalIn {
   from {
@@ -240,47 +246,101 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  gap: 12px;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border-soft);
+  flex-shrink: 0;
 }
 .modal-header h2 {
-  font-size: 19px;
+  font-size: 18px;
+}
+.modal-body {
+  padding: 24px 28px 8px;
+  overflow-y: auto;
+}
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 28px;
+  border-top: 1px solid var(--border-soft);
+  background: var(--bg);
+  flex-shrink: 0;
 }
 .modal-close {
   background: none;
   border: none;
   color: var(--ink-soft);
-  font-size: 20px;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 22px;
   line-height: 1;
-  padding: 4px;
+  padding: 0;
   border-radius: 6px;
+}
+.modal-close:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 .modal-close:hover {
   color: var(--ink);
   background: var(--border-soft);
 }
 
-.form-grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
+/* Wider task modal shared by create, edit and view so all three look the same. */
+.modal--wide {
+  max-width: 720px;
 }
-.modal-actions {
+.modal--wide .modal-body {
+  padding: 20px 28px 6px;
+}
+.modal-header-title {
   display: flex;
-  justify-content: flex-end;
+  align-items: baseline;
   gap: 10px;
-  margin-top: 6px;
+  min-width: 0;
 }
-
+.modal-header-title h2 {
+  overflow-wrap: anywhere;
+}
+.task-id-chip {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-faint);
+}
+/* Same 3-column grid for the fields (form) and the values (view). */
+.modal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0 16px;
+}
+.modal-grid .field {
+  margin-bottom: 14px;
+}
+@media (max-width: 640px) {
+  .modal-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 480px) {
+  .modal-grid {
+    grid-template-columns: 1fr;
+  }
+}
 .required-mark {
   color: var(--danger);
-  margin-left: 2px;
   font-weight: 600;
 }
 .required-note {
+  margin: 0 auto 0 0;
   font-size: 12px;
   color: var(--ink-faint);
-  margin-top: 2px;
-  margin-bottom: 14px;
 }
 .input.input-error {
   border-color: var(--danger);
@@ -295,5 +355,125 @@ button {
 }
 textarea.input {
   resize: vertical;
-  min-height: 80px;
+  min-height: 72px;
+}
+
+/* ---------- text-style link button (e.g. "Clear filters") ---------- */
+.link-btn {
+  background: none;
+  border: none;
+  padding: 4px 2px;
+  color: var(--ink-soft);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.link-btn:hover {
+  color: var(--accent-dark);
+}
+
+/* ---------- instant tooltip: add data-tooltip="Text" to any button ---------- */
+[data-tooltip] {
+  position: relative;
+}
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--surface);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 60;
+  transition: opacity 0.12s ease;
+}
+[data-tooltip]:hover::after,
+[data-tooltip]:focus-visible::after {
+  opacity: 1;
+  transition-delay: 0.25s;
+}
+[data-tooltip][data-tooltip-pos='bottom']::after {
+  bottom: auto;
+  top: calc(100% + 8px);
+}
+[data-tooltip][data-tooltip-pos='left']::after {
+  bottom: auto;
+  left: auto;
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ---------- status badge + priority tag (shared by table and task details) ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  width: fit-content;
+}
+.badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.badge--todo {
+  background: var(--slate-soft);
+  color: var(--slate);
+}
+.badge--progress {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+.badge--done {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.priority-tag {
+  font-size: 12.5px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+}
+.priority-tag::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+.priority-tag--high {
+  color: var(--danger);
+}
+.priority-tag--high::before {
+  background: var(--danger);
+}
+.priority-tag--medium {
+  color: var(--warning);
+}
+.priority-tag--medium::before {
+  background: var(--warning);
+}
+.priority-tag--low {
+  color: var(--success);
+}
+.priority-tag--low::before {
+  background: var(--success);
 }

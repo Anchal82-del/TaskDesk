@@ -1,15 +1,24 @@
 import { TestBed } from '@angular/core/testing';
-import { Auth } from './auth';
+import { AuthService } from '@app/auth';
 
-describe('Auth', () => {
-  let service: Auth;
+describe('AuthService', () => {
+  let service: AuthService;
 
   beforeEach(() => {
+    sessionStorage.clear();
     TestBed.configureTestingModule({});
-    service = TestBed.inject(Auth);
+    service = TestBed.inject(AuthService);
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
+  it('starts logged out, then logs in and out', () => {
+    expect(service.isLoggedIn()).toBe(false);
+    service.login();
+    expect(service.isLoggedIn()).toBe(true);
+    service.logout();
+    expect(service.isLoggedIn()).toBe(false);
+  });
+
+  it('has no token until the backend issues one', () => {
+    expect(service.getToken()).toBeNull();
   });
 });

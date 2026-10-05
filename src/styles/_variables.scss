@@ -1,0 +1,5 @@
+// Shared SCSS variables (colours and theming stay as CSS custom properties in styles.scss
+// so the light/dark switch works at runtime).
+$breakpoint-sm: 480px;
+$breakpoint-md: 860px;
+$breakpoint-lg: 900px;

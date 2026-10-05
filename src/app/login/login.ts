@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../auth';
+import { AuthService } from '@app/auth';
 
 const USERNAME_PREFIX = 'u';
 const USERNAME_DIGIT_COUNT = 6;
@@ -11,7 +11,7 @@ const USERNAME_DIGIT_COUNT = 6;
   standalone: true,
   imports: [ReactiveFormsModule],
   templateUrl: './login.html',
-  styleUrl: './login.css',
+  styleUrl: './login.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoginComponent {
@@ -28,6 +28,22 @@ export class LoginComponent {
     password: ['', [Validators.required]],
     remember: [false]
   });
+
+  get passwordInputType(): string {
+    return this.showPassword ? 'text' : 'password';
+  }
+
+  get passwordToggleLabel(): string {
+    return this.showPassword ? 'Hide' : 'Show';
+  }
+
+  get submitLabel(): string {
+    return this.isSubmitting ? 'Signing in…' : 'Sign in';
+  }
+
+  onForgotPassword(event: Event): void {
+    event.preventDefault();
+  }
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;
@@ -76,7 +92,7 @@ export class LoginComponent {
     if (digits.length !== USERNAME_DIGIT_COUNT) {
       return (
         `Username must contain exactly ${USERNAME_DIGIT_COUNT} digits after the letter ` +
-        `"${USERNAME_PREFIX}". You entered ${digits.length}.`
+        `"${USERNAME_PREFIX}".`
       );
     }
     return '';

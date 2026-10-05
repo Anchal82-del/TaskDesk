@@ -1,14 +1,19 @@
 <div class="modal-overlay">
-  <button
-    type="button"
-    class="modal-backdrop"
-    tabindex="-1"
-    aria-label="Close dialog"
-    (click)="onCancel()"
-  ></button>
+  <div class="modal-backdrop" (click)="onCancel()" aria-hidden="true"></div>
 
   <div class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
-    <h2 id="confirm-title">{{ title }}</h2>
+    <div class="confirm-header">
+      <h2 id="confirm-title">{{ heading }}</h2>
+      <button
+        class="modal-close"
+        type="button"
+        (click)="onCancel()"
+        [disabled]="isBusy"
+        aria-label="Close"
+      >
+        &times;
+      </button>
+    </div>
     <p>{{ message }}</p>
     <div class="confirm-actions">
       <button type="button" class="btn btn-ghost" (click)="onCancel()" [disabled]="isBusy">
@@ -22,7 +27,7 @@
         (click)="onConfirm()"
         [disabled]="isBusy"
       >
-        {{ isBusy ? 'Please wait…' : confirmLabel }}
+        {{ confirmText }}
       </button>
     </div>
   </div>

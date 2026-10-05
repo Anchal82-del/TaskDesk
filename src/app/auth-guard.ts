@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { AuthService } from './auth';
+import { AuthService } from '@app/auth';
 
 // A guard runs BEFORE a route is allowed to activate.
 // Returning true = proceed. Returning false = block (and here, redirect).

@@ -1,30 +1,7 @@
-// import { Injectable } from '@angular/core';
-
-// // A tiny in-memory "session" — resets on page refresh, same as the task
-// // list does right now. This will be replaced by a real token/session
-// // check once the Node API exists.
-// @Injectable({
-//   providedIn: 'root'
-// })
-// export class AuthService {
-//   private loggedIn = false;
-
-//   login(): void {
-//     this.loggedIn = true;
-//   }
-
-//   logout(): void {
-//     this.loggedIn = false;
-//   }
-
-//   isLoggedIn(): boolean {
-//     return this.loggedIn;
-//   }
-// }
-
 import { Injectable } from '@angular/core';
 
 const SESSION_KEY = 'tasklist_session_active';
+const TOKEN_KEY = 'taskdesk_token';
 
 // The session flag lives in sessionStorage so a page refresh keeps you signed in.
 // It is cleared on logout or when the browser tab is closed.
@@ -39,6 +16,12 @@ export class AuthService {
 
   logout(): void {
     sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
+  }
+
+  // Returns the API token once the Node backend issues one; null until then.
+  getToken(): string | null {
+    return sessionStorage.getItem(TOKEN_KEY);
   }
 
   isLoggedIn(): boolean {

@@ -1,0 +1,35 @@
+.detail-grid {
+  margin: 0;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.detail-item dt,
+.detail-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 5px;
+}
+.detail-item dd {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.detail-section {
+  padding: 16px 0 14px;
+}
+.detail-description {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.detail-description--empty {
+  color: var(--ink-faint);
+  font-style: italic;
+}
