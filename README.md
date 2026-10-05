@@ -4,32 +4,20 @@ A task management application currently being developed using Angular.
 
 ## Project Status
 
-**Work in Progress**
-
-The current stage focuses on building and refining the frontend application. The backend and database integration will be implemented in later stages.
+Frontend complete; Express REST API (in-memory data) added. MongoDB and Angular–API
+integration are the next stages.
 
 ## Current Implementation
 
-The current Angular frontend includes:
+- Angular frontend: login, dashboard, search, filters, sorting, pagination, task
+  create/edit/delete/view, CSV download, in-app notifications, settings (light/dark theme)
+- Express API in `backend/`: GET/POST/PUT/DELETE tasks, validation, error handling
+  (see `backend/README.md`)
 
-- Login page with username and password validation
-- Dashboard task list
-- Task search
-- Status and priority filtering
-- Task creation
-- Task editing
-- Task deletion
-- Task details view
-- Inline description editing
-- Task statistics
-- Required field validation
-- Sidebar navigation
-- Sidebar collapse functionality
-- Logout flow
-- Logged-out page
-- Responsive UI
-- Angular services and component-based structure
-- Angular `@if` and `@for` template control flow
+## Run
+
+Backend: `cd backend`, `npm install`, copy `.env.example` to `.env`, `npm run dev`
+Frontend: `npm install`, `ng serve`
 
 ## Planned Development
 
