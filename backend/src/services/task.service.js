@@ -7,8 +7,8 @@ const AppError = require('../utils/AppError');
 // It knows nothing about HTTP requests or responses - that is the controller's job.
 const notFound = (id) => AppError.notFound(`Task with id ${id} was not found.`);
 
-async function getAllTasks() {
-  return taskRepository.findAll();
+async function getAllTasks(query = {}) {
+  return taskRepository.findAll(query);
 }
 
 async function getTaskById(id) {

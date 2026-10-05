@@ -6,8 +6,8 @@ const { sendSuccess } = require('../utils/response');
 // The controller only translates HTTP <-> service calls: read the request, call the
 // service, choose the status code. No business rules here. Express 5 forwards errors from
 // async functions to the error middleware automatically, so no try/catch is needed.
-async function listTasks(_req, res) {
-  const tasks = await taskService.getAllTasks();
+async function listTasks(req, res) {
+  const tasks = await taskService.getAllTasks(req.query);
   return sendSuccess(res, 200, tasks);
 }
 

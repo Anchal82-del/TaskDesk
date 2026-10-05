@@ -1,53 +1,126 @@
-# TaskDesk
+# TaskDesk - Full-Stack Task Management Application
 
-A task management application currently being developed using Angular.
+A full-stack Task Management application built with **Angular (v22)** and **Node.js / Express** with **MongoDB** persistence.
 
-## Project Status
+---
 
-Frontend complete; Express REST API (in-memory data) added. MongoDB and Angular–API
-integration are the next stages.
+## Features
 
-## Current Implementation
+### Angular Frontend
+- **Task List Page & Dynamic Table**: Responsive task list with fields: ID, Title, Priority, Status, Reviewer, and Assignee.
+- **Dynamic Filters & Search**: Real-time filtering by status (`todo`, `progress`, `done`), priority (`high`, `medium`, `low`), project, and instant search across titles and descriptions.
+- **Pagination & Sorting**: Configurable entries per page (5, 10, 15, 20), dynamic sorting by ID, status, or priority with ascending/descending order toggle.
+- **Task Creation & Editing Form**: Reactive form with validation for title, description, priority, status, reviewer, assignee, and project.
+- **Full Row Actions**:
+  - **View**: Modal showing comprehensive task details, badges, and project information.
+  - **Edit**: Modal pre-populated with task data for updating fields.
+  - **Delete**: Confirmation dialog with permanent delete action.
+- **Angular Services**: `TaskService` communicates with the backend via `HttpClient`, providing optimistic UI updates and reactive state streams.
+- **Template Control Flow**: Modern Angular `@if`, `@for`, and `@empty` control flows.
+- **Export to CSV**: Instant client-side CSV export of filtered tasks.
+- **In-App Toast Notifications**: Immediate visual feedback for create, update, and delete actions.
 
-- Angular frontend: login, dashboard, search, filters, sorting, pagination, task
-  create/edit/delete/view, CSV download, in-app notifications, settings (light/dark theme)
-- Express API in `backend/`: GET/POST/PUT/DELETE tasks, validation, error handling
-  (see `backend/README.md`)
+### Node.js / Express Backend
+- **REST APIs**:
+  - `GET /api/tasks` (with optional filtering: `?status=...&priority=...&projectId=...&search=...`)
+  - `GET /api/tasks/:id`
+  - `POST /api/tasks`
+  - `PUT /api/tasks/:id`
+  - `DELETE /api/tasks/:id`
+  - `GET /api/health`
+- **Separation of Concerns**: Clean layering across `routes`, `validators`, `controllers`, `services`, and `repositories`.
+- **Request Validation**: Schema validation powered by `Joi`.
+- **Centralized Error Handling**: Standardized JSON responses for validation errors, 404s, and unexpected exceptions.
+- **MongoDB Database Integration**:
+  - Mongoose schema with data modeling, auto-incrementing sequential task IDs (`#1`, `#2`, ...), timestamps, and validations.
+  - Automatic database seeding with initial sample tasks on first connection.
+  - Built-in graceful fallback to in-memory persistence when MongoDB is offline, allowing the server to start without crashing.
+- **Swagger / OpenAPI 3.0 Documentation**: Interactive API documentation available at `http://localhost:3000/api/docs`.
 
-## Run
+---
 
-Backend: `cd backend`, `npm install`, copy `.env.example` to `.env`, `npm run dev`
-Frontend: `npm install`, `ng serve`
+## Getting Started
 
-## Planned Development
+### Prerequisites
+- Node.js (v20+ recommended)
+- npm
 
-The next stages will include:
+---
 
-- Node.js and Express REST API
-- Task CRUD endpoints
-- Request validation and error handling
-- MongoDB integration
-- Connecting the Angular frontend to the backend APIs
-- API documentation using Swagger/OpenAPI
-- Final testing and documentation
+## MongoDB Setup (Step-by-Step)
 
-## Technology Stack
+You can choose either **Option A (Zero local install - Free MongoDB Atlas)** or **Option B (Local MongoDB Community Server)**.
 
-### Current
+### Option A: MongoDB Atlas (Recommended - No local software to install)
+1. Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register) and create a free account.
+2. Create a free **M0 (Shared)** cluster.
+3. In **Database Access**, create a database user (e.g. username `taskadmin` and a secure password).
+4. In **Network Access**, click **Add IP Address** and select **Allow Access from Anywhere** (`0.0.0.0/0`).
+5. Click **Connect** > **Drivers** > copy the connection string.
+6. Open [backend/.env](file:///backend/.env) and set:
+   ```env
+   MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/taskdesk?retryWrites=true&w=majority
+   ```
+7. Start the backend: the app will automatically connect and seed the tasks collection!
 
-- Angular
-- TypeScript
-- HTML
-- CSS
+---
 
-### Planned
+### Option B: Local MongoDB Community Server on Windows
+1. Download the MongoDB Community Server MSI installer from the [MongoDB Download Center](https://www.mongodb.com/try/download/community).
+2. Run the `.msi` installer:
+   - Choose **Complete** setup.
+   - Select **Run MongoDB as a Service**.
+   - (Optional) Install MongoDB Compass GUI for visual database inspection.
+3. Complete the installation. The Windows service `MongoDB` will start automatically on `127.0.0.1:27017`.
+4. Ensure [backend/.env](file:///backend/.env) contains:
+   ```env
+   MONGODB_URI=mongodb://127.0.0.1:27017/taskdesk
+   ```
 
-- Node.js
-- Express.js
-- MongoDB
-- REST API
-- Swagger/OpenAPI
+*(Note: If MongoDB is not yet running, the backend server starts in in-memory fallback mode so you can test the frontend and API immediately).*
 
-## Note
+---
 
-This repository is currently being used as a development and mentor-review repository. The application is not yet complete and the implementation may continue to change as development progresses.
+## Running the Application
+
+### 1. Start the Backend API
+```bash
+cd backend
+npm install
+npm start
+```
+- API Server: `http://localhost:3000`
+- Swagger Documentation: `http://localhost:3000/api/docs`
+- OpenAPI JSON: `http://localhost:3000/api/docs.json`
+
+### 2. Start the Angular Frontend
+```bash
+# In the root project directory:
+npm install
+npm start
+```
+- Web Application: `http://localhost:4200`
+- Default Login:
+  - **Username**: `u123456` *(Format: lowercase 'u' followed by 6 digits)*
+  - **Password**: `password123` *(Any non-empty password)*
+
+---
+
+## Running Tests
+
+### Frontend Tests (Vitest / Angular)
+```bash
+npx ng test --watch=false
+```
+
+### Backend Tests (Node Test Runner)
+```bash
+cd backend
+npm test
+```
+
+### Linting
+```bash
+npm run lint         # Angular frontend lint
+cd backend && npm run lint  # Express backend lint
+```

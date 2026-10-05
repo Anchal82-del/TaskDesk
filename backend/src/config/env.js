@@ -15,7 +15,8 @@ const env = {
   logLevel: process.env.LOG_LEVEL || 'info',
   corsOrigins: toList(process.env.CORS_ORIGINS || 'http://localhost:4200'),
   rateLimitWindowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
-  rateLimitMax: Number(process.env.RATE_LIMIT_MAX) || 300
+  rateLimitMax: Number(process.env.RATE_LIMIT_MAX) || 300,
+  mongoUri: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/taskdesk'
 };
 
 module.exports = { env };

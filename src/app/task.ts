@@ -1,11 +1,26 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, catchError, map, of, shareReplay, tap } from 'rxjs';
+import { environment } from '@env/environment';
 import { Task, TaskInput } from '@app/task.model';
+
+export interface ApiResponse<T> {
+  status: string;
+  data: T;
+  error?: {
+    code: string;
+    message: string;
+    details?: string[];
+  };
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class TaskService {
+  private readonly http = inject(HttpClient, { optional: true });
+  private readonly baseUrl = `${environment.apiUrl}/tasks`;
+
   private tasks: Task[] = [
     {
       id: 1,
@@ -91,24 +106,127 @@ export class TaskService {
 
   private nextId = this.tasks.length + 1;
   private tasksSubject = new BehaviorSubject<Task[]>(this.tasks);
+  private hasLoadedFromApi = false;
+
+  constructor() {
+    if (this.http) {
+      this.refreshTasks().subscribe();
+    }
+  }
 
   getTasks(): Observable<Task[]> {
+    if (this.http && !this.hasLoadedFromApi) {
+      this.refreshTasks().subscribe();
+    }
     return this.tasksSubject.asObservable();
   }
 
-  addTask(data: TaskInput): void {
-    const newTask: Task = { id: this.nextId++, ...data };
-    this.tasks = [...this.tasks, newTask];
-    this.tasksSubject.next(this.tasks);
+  refreshTasks(): Observable<Task[]> {
+    if (!this.http) {
+      return of(this.tasks);
+    }
+    return this.http.get<ApiResponse<Task[]>>(this.baseUrl).pipe(
+      map((res) => res.data),
+      tap((remoteTasks) => {
+        if (Array.isArray(remoteTasks)) {
+          this.tasks = remoteTasks;
+          this.nextId = remoteTasks.reduce((max, t) => Math.max(max, t.id), 0) + 1;
+          this.tasksSubject.next(this.tasks);
+          this.hasLoadedFromApi = true;
+        }
+      }),
+      catchError((error) => {
+        console.warn('Could not fetch tasks from backend API. Using local state.', error);
+        return of(this.tasksSubject.value);
+      }),
+      shareReplay(1)
+    );
   }
 
-  updateTask(id: number, data: TaskInput): void {
-    this.tasks = this.tasks.map((t) => (t.id === id ? { id, ...data } : t));
-    this.tasksSubject.next(this.tasks);
+  getTaskById(id: number): Observable<Task | null> {
+    if (!this.http) {
+      const found = this.tasks.find((t) => t.id === id) || null;
+      return of(found);
+    }
+    return this.http.get<ApiResponse<Task>>(`${this.baseUrl}/${id}`).pipe(
+      map((res) => res.data),
+      catchError(() => {
+        const found = this.tasks.find((t) => t.id === id) || null;
+        return of(found);
+      })
+    );
   }
 
-  deleteTask(id: number): void {
+  addTask(data: TaskInput): Observable<Task> {
+    const localTask: Task = { id: this.nextId++, ...data };
+    this.tasks = [...this.tasks, localTask];
+    this.tasksSubject.next(this.tasks);
+
+    if (!this.http) {
+      return of(localTask);
+    }
+
+    const req$ = this.http.post<ApiResponse<Task>>(this.baseUrl, data).pipe(
+      map((res) => res.data),
+      tap((created) => {
+        this.tasks = this.tasks.map((t) => (t.id === localTask.id ? created : t));
+        this.nextId = Math.max(this.nextId, created.id + 1);
+        this.tasksSubject.next(this.tasks);
+      }),
+      catchError((err) => {
+        console.warn('API addTask failed, keeping optimistic local task', err);
+        return of(localTask);
+      }),
+      shareReplay(1)
+    );
+
+    req$.subscribe({ error: (err) => console.debug('Task API error:', err) });
+    return req$;
+  }
+
+  updateTask(id: number, data: TaskInput): Observable<Task> {
+    const updated: Task = { id, ...data };
+    this.tasks = this.tasks.map((t) => (t.id === id ? updated : t));
+    this.tasksSubject.next(this.tasks);
+
+    if (!this.http) {
+      return of(updated);
+    }
+
+    const req$ = this.http.put<ApiResponse<Task>>(`${this.baseUrl}/${id}`, data).pipe(
+      map((res) => res.data),
+      tap((remoteUpdated) => {
+        this.tasks = this.tasks.map((t) => (t.id === id ? remoteUpdated : t));
+        this.tasksSubject.next(this.tasks);
+      }),
+      catchError((err) => {
+        console.warn('API updateTask failed, keeping optimistic local update', err);
+        return of(updated);
+      }),
+      shareReplay(1)
+    );
+
+    req$.subscribe({ error: (err) => console.debug('Task API error:', err) });
+    return req$;
+  }
+
+  deleteTask(id: number): Observable<void> {
     this.tasks = this.tasks.filter((t) => t.id !== id);
     this.tasksSubject.next(this.tasks);
+
+    if (!this.http) {
+      return of(undefined);
+    }
+
+    const req$ = this.http.delete<void>(`${this.baseUrl}/${id}`).pipe(
+      catchError((err) => {
+        console.warn('API deleteTask failed, keeping optimistic local deletion', err);
+        return of(undefined);
+      }),
+      shareReplay(1)
+    );
+
+    req$.subscribe({ error: (err) => console.debug('Task API error:', err) });
+    return req$;
   }
 }

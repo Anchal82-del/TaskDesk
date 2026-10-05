@@ -49,7 +49,6 @@ interface TaskRow {
 
 const SEARCH_DEBOUNCE_MS = 250;
 const LOADING_DELAY_MS = 600;
-const DELETE_DELAY_MS = 400;
 const DEFAULT_PAGE_SIZE = 5;
 
 @Component({
@@ -232,14 +231,28 @@ export class DashboardComponent {
     this.viewingTask.set(null);
   }
 
+  refreshTasks(): void {
+    this.isLoading.set(true);
+    this.taskService.refreshTasks().subscribe({
+      next: () => this.isLoading.set(false),
+      error: () => this.isLoading.set(false)
+    });
+  }
+
   handleSave(data: TaskInput): void {
     const editing = this.editingTask();
     if (editing) {
-      this.taskService.updateTask(editing.id, data);
-      this.notifier.notifyUpdated(editing, data);
+      this.taskService.updateTask(editing.id, data).subscribe({
+        next: () => {
+          this.notifier.notifyUpdated(editing, data);
+        }
+      });
     } else {
-      this.taskService.addTask(data);
-      this.notifier.notifyCreated(data);
+      this.taskService.addTask(data).subscribe({
+        next: () => {
+          this.notifier.notifyCreated(data);
+        }
+      });
     }
     this.closeModal();
   }
@@ -256,13 +269,16 @@ export class DashboardComponent {
     const task = this.taskPendingDelete();
     if (!task) return;
     this.isDeleting.set(true);
-    timer(DELETE_DELAY_MS)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.taskService.deleteTask(task.id);
+    this.taskService.deleteTask(task.id).subscribe({
+      next: () => {
         this.notifier.notifyDeleted(task);
         this.isDeleting.set(false);
         this.taskPendingDelete.set(null);
-      });
+      },
+      error: () => {
+        this.isDeleting.set(false);
+        this.taskPendingDelete.set(null);
+      }
+    });
   }
 }
