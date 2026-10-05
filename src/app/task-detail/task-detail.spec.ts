@@ -1,16 +1,28 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TaskDetail } from './task-detail';
+import { provideRouter } from '@angular/router';
+import { TaskDetailComponent } from '@app/task-detail/task-detail';
 
-describe('TaskDetail', () => {
-  let component: TaskDetail;
-  let fixture: ComponentFixture<TaskDetail>;
+describe('TaskDetailComponent', () => {
+  let component: TaskDetailComponent;
+  let fixture: ComponentFixture<TaskDetailComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TaskDetail]
+      imports: [TaskDetailComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TaskDetail);
+    fixture = TestBed.createComponent(TaskDetailComponent);
+    fixture.componentRef.setInput('task', {
+      id: 1,
+      title: 'Sample task',
+      description: '',
+      priority: 'low',
+      status: 'todo',
+      reviewerId: 1,
+      assigneeId: 2,
+      projectId: 1
+    });
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

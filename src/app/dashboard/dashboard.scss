@@ -1,3 +1,5 @@
+@use 'styles/variables' as *;
+
 .topbar {
   display: flex;
   align-items: center;
@@ -13,94 +15,6 @@
   color: var(--ink-soft);
   font-size: 14px;
   margin-top: 4px;
-}
-
-/* ---------- stat cards (item 7) ---------- */
-.stats-bar {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-.stat-card {
-  flex: 1;
-  min-width: 150px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 18px 20px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(31, 36, 48, 0.04);
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-}
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(31, 36, 48, 0.08);
-}
-.stat-card::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-}
-.stat-total::before {
-  background: var(--accent);
-}
-.stat-todo::before {
-  background: var(--slate);
-}
-.stat-progress::before {
-  background: var(--warning);
-}
-.stat-done::before {
-  background: var(--success);
-}
-.stat-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.stat-icon svg {
-  width: 20px;
-  height: 20px;
-}
-.stat-total .stat-icon {
-  background: var(--accent-soft);
-  color: var(--accent-dark);
-}
-.stat-todo .stat-icon {
-  background: var(--slate-soft);
-  color: var(--slate);
-}
-.stat-progress .stat-icon {
-  background: var(--warning-soft);
-  color: var(--warning);
-}
-.stat-done .stat-icon {
-  background: var(--success-soft);
-  color: var(--success);
-}
-.stat-card .value {
-  font-family: var(--font-display);
-  font-size: 26px;
-  font-weight: 700;
-}
-.stat-card .label {
-  font-size: 13px;
-  color: var(--ink-soft);
-  margin-top: 2px;
 }
 
 /* ---------- toolbar (items 5, 8) ---------- */
@@ -161,6 +75,54 @@
   }
 }
 
+/* ---------- table controls above the list ---------- */
+.table-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+}
+.table-top-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.table-top select.input {
+  width: auto;
+  padding: 6px 10px;
+}
+.sort-dir-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sort-dir-btn:hover {
+  border-color: var(--ink-faint);
+  color: var(--ink);
+}
+.sort-dir-btn svg {
+  width: 15px;
+  height: 15px;
+  transition: transform 0.15s ease;
+}
+.sort-dir-btn.desc svg {
+  transform: rotate(180deg);
+}
+.btn svg {
+  width: 15px;
+  height: 15px;
+}
+
 /* ---------- table (item 6) ---------- */
 .task-list {
   background: var(--surface);
@@ -171,7 +133,7 @@
 .task-list-head,
 .task-row {
   display: grid;
-  grid-template-columns: 70px minmax(0, 2.6fr) minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr) 120px;
+  grid-template-columns: 64px minmax(0, 2.4fr) 90px 120px minmax(0, 1fr) minmax(0, 1fr) 120px;
   gap: 14px;
   align-items: center;
 }
@@ -236,11 +198,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.ps-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
 .assignee {
   font-size: 13.5px;
   color: var(--ink-soft);
@@ -300,70 +257,6 @@
   margin-bottom: 16px;
 }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12.5px;
-  font-weight: 500;
-  white-space: nowrap;
-  width: fit-content;
-}
-.badge::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-}
-.badge--todo {
-  background: var(--slate-soft);
-  color: var(--slate);
-}
-.badge--progress {
-  background: var(--warning-soft);
-  color: var(--warning);
-}
-.badge--done {
-  background: var(--success-soft);
-  color: var(--success);
-}
-
-.priority-tag {
-  font-size: 12.5px;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  width: fit-content;
-}
-.priority-tag::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-}
-.priority-tag--high {
-  color: var(--danger);
-}
-.priority-tag--high::before {
-  background: var(--danger);
-}
-.priority-tag--medium {
-  color: var(--warning);
-}
-.priority-tag--medium::before {
-  background: var(--warning);
-}
-.priority-tag--low {
-  color: var(--success);
-}
-.priority-tag--low::before {
-  background: var(--success);
-}
-
 /* ---------- pagination (item 6) ---------- */
 .table-footer {
   display: flex;
@@ -375,50 +268,7 @@
   font-size: 13.5px;
   color: var(--ink-soft);
 }
-.entries-per-page {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.entries-per-page select.input {
-  width: auto;
-  padding: 6px 10px;
-}
-.pagination {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.page-btn {
-  min-width: 30px;
-  height: 30px;
-  padding: 0 8px;
-  border-radius: 7px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--ink-soft);
-  font-size: 13px;
-  font-weight: 500;
-}
-.page-btn:hover:not(:disabled) {
-  border-color: var(--ink-faint);
-  color: var(--ink);
-}
-.page-btn.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
-.page-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-.page-ellipsis {
-  padding: 0 4px;
-  color: var(--ink-faint);
-}
-
-@media (max-width: 900px) {
+@media (max-width: $breakpoint-lg) {
   .task-list-head {
     display: none;
   }
@@ -429,4 +279,9 @@
   .row-actions {
     justify-content: flex-start;
   }
+}
+
+/* Pushes the download icon to the far right of the filter row. */
+.download-btn {
+  margin-left: auto;
 }

@@ -1,15 +1,22 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { UserService } from '../user';
+import { User } from '@app/user.model';
+import { UserService } from '@app/user';
+
+interface UserRow extends User {
+  initial: string;
+}
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [],
   templateUrl: './users.html',
-  styleUrl: './users.css',
+  styleUrl: './users.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UsersComponent {
   private readonly userService = inject(UserService);
-  users = this.userService.getUsers();
+
+  readonly users: UserRow[] = this.userService
+    .getUsers()
+    .map((user) => ({ ...user, initial: user.name.charAt(0) }));
 }

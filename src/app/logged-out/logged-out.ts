@@ -4,9 +4,8 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-logged-out',
   standalone: true,
-  imports: [],
   templateUrl: './logged-out.html',
-  styleUrl: './logged-out.css',
+  styleUrl: './logged-out.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoggedOutComponent {

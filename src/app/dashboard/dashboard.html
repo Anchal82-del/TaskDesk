@@ -6,62 +6,9 @@
   <button class="btn btn-primary" type="button" (click)="openAddModal()">+ New task</button>
 </div>
 
-<div class="stats-bar">
-  <div class="stat-card stat-total">
-    <div class="stat-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <rect x="3" y="3" width="7" height="7" rx="1.5" />
-        <rect x="14" y="3" width="7" height="7" rx="1.5" />
-        <rect x="3" y="14" width="7" height="7" rx="1.5" />
-        <rect x="14" y="14" width="7" height="7" rx="1.5" />
-      </svg>
-    </div>
-    <div>
-      <div class="value">{{ totalCount }}</div>
-      <div class="label">Total tasks</div>
-    </div>
-  </div>
+<app-task-stats [counts]="counts()"></app-task-stats>
 
-  <div class="stat-card stat-todo">
-    <div class="stat-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <circle cx="12" cy="12" r="9" />
-      </svg>
-    </div>
-    <div>
-      <div class="value">{{ todoCount }}</div>
-      <div class="label">To do</div>
-    </div>
-  </div>
-
-  <div class="stat-card stat-progress">
-    <div class="stat-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 7v5l3 3" />
-      </svg>
-    </div>
-    <div>
-      <div class="value">{{ progressCount }}</div>
-      <div class="label">In progress</div>
-    </div>
-  </div>
-
-  <div class="stat-card stat-done">
-    <div class="stat-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <circle cx="12" cy="12" r="9" />
-        <path d="M8.5 12.5l2.3 2.3L15.5 9.5" />
-      </svg>
-    </div>
-    <div>
-      <div class="value">{{ doneCount }}</div>
-      <div class="label">Done</div>
-    </div>
-  </div>
-</div>
-
-<div class="toolbar-row">
+<form class="toolbar-row" [formGroup]="filterForm">
   <div class="search-box">
     <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <circle cx="11" cy="11" r="7" />
@@ -71,38 +18,98 @@
       class="input"
       type="text"
       placeholder="Search tasks or ID…"
-      [(ngModel)]="searchQuery"
-      (ngModelChange)="onFilterChange()"
+      aria-label="Search tasks"
+      formControlName="search"
     />
   </div>
 
-  <select class="input" [(ngModel)]="projectFilter" (ngModelChange)="onFilterChange()">
+  <select class="input" aria-label="Filter by project" formControlName="projectId">
     <option value="all">Project</option>
     @for (p of projects; track p.id) {
     <option [value]="p.id">{{ p.name }}</option>
     }
   </select>
 
-  <select class="input" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
+  <select class="input" aria-label="Filter by status" formControlName="status">
     <option value="all">Status</option>
-    <option value="todo">To do</option>
-    <option value="progress">In progress</option>
-    <option value="done">Done</option>
+    @for (o of statusOptions; track o.value) {
+    <option [value]="o.value">{{ o.label }}</option>
+    }
   </select>
 
-  <select class="input" [(ngModel)]="priorityFilter" (ngModelChange)="onFilterChange()">
+  <select class="input" aria-label="Filter by priority" formControlName="priority">
     <option value="all">Priority</option>
-    <option value="high">High</option>
-    <option value="medium">Medium</option>
-    <option value="low">Low</option>
+    @for (o of priorityOptions; track o.value) {
+    <option [value]="o.value">{{ o.label }}</option>
+    }
   </select>
 
-  <button class="btn btn-ghost" type="button" (click)="clearFilters()">Clear filters</button>
-  <button class="btn btn-ghost" type="button" (click)="downloadCsv()">Download</button>
-</div>
+  <button class="link-btn" type="button" (click)="clearFilters()">Clear filters</button>
+  <button
+    type="button"
+    class="sort-dir-btn download-btn"
+    (click)="downloadCsv()"
+    aria-label="Download tasks as CSV"
+    data-tooltip="Download"
+    data-tooltip-pos="left"
+  >
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      aria-hidden="true"
+    >
+      <path d="M12 3v12" />
+      <path d="M7 11l5 5 5-5" />
+      <path d="M4 20h16" />
+    </svg>
+  </button>
+</form>
 
 <div class="task-list-wrap">
-  @if (isLoading) {
+  <form class="table-top" [formGroup]="viewForm">
+    <div class="table-top-group">
+      <label for="pageSize">Show</label>
+      <select id="pageSize" class="input" formControlName="pageSize">
+        @for (n of pageSizeOptions; track n) {
+        <option [ngValue]="n">{{ n }}</option>
+        }
+      </select>
+      <span>entries</span>
+    </div>
+
+    <div class="table-top-group">
+      <label for="sortBy" class="sort-label">Sort by</label>
+      <select id="sortBy" class="input" formControlName="sortBy">
+        <option value="id">ID</option>
+        <option value="priority">Priority</option>
+        <option value="status">Status</option>
+      </select>
+      <button
+        type="button"
+        class="sort-dir-btn"
+        [class.desc]="isSortDescending()"
+        (click)="toggleSortDir()"
+        [attr.aria-label]="sortDirLabel() + ' order'"
+        [attr.data-tooltip]="sortDirLabel()"
+        data-tooltip-pos="left"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M12 19V5" />
+          <path d="M6 11l6-6 6 6" />
+        </svg>
+      </button>
+    </div>
+  </form>
+
+  @if (isLoading()) {
   <div class="table-loading">
     <div class="spinner"></div>
     <p>Loading tasks…</p>
@@ -112,30 +119,36 @@
     <div class="task-list-head">
       <div>ID</div>
       <div>Task</div>
-      <div>Priority / Status</div>
-      <div>Reporter</div>
+      <div>Priority</div>
+      <div>Status</div>
+      <div>Reviewer</div>
       <div>Assignee</div>
       <div></div>
     </div>
 
-    @for (t of pagedTasks; track t.id) {
-    <div class="task-row" [attr.data-priority]="t.priority">
-      <div class="task-id">#{{ t.id }}</div>
-      <div class="task-title">{{ t.title }}</div>
-      <div class="ps-cell">
-        <span class="priority-tag" [ngClass]="'priority-tag--' + t.priority"
-          >{{ priorityLabel[t.priority] }}</span
-        >
-        <span class="badge" [ngClass]="'badge--' + t.status">{{ statusLabel[t.status] }}</span>
+    @for (row of rows(); track row.task.id) {
+    <div class="task-row" [attr.data-priority]="row.task.priority">
+      <div class="task-id">#{{ row.task.id }}</div>
+      <div class="task-title">{{ row.task.title }}</div>
+      <div>
+        <span class="priority-tag" [ngClass]="priorityClass[row.task.priority]">{{
+          priorityLabel[row.task.priority]
+        }}</span>
       </div>
-      <div class="assignee">{{ getReporterName(t.reporterId) }}</div>
-      <div class="assignee">{{ getAssigneeName(t.assigneeId) }}</div>
+      <div>
+        <span class="badge" [ngClass]="statusClass[row.task.status]">{{
+          statusLabel[row.task.status]
+        }}</span>
+      </div>
+      <div class="assignee">{{ row.reviewerName }}</div>
+      <div class="assignee">{{ row.assigneeName }}</div>
       <div class="row-actions">
         <button
           class="icon-btn icon-btn--view"
           type="button"
-          (click)="openDetail(t)"
+          (click)="openDetail(row.task)"
           aria-label="View task"
+          data-tooltip="View"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
@@ -145,8 +158,9 @@
         <button
           class="icon-btn icon-btn--edit"
           type="button"
-          (click)="openEditModal(t)"
+          (click)="openEditModal(row.task)"
           aria-label="Edit task"
+          data-tooltip="Edit"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M12 20h9" />
@@ -156,8 +170,9 @@
         <button
           class="icon-btn icon-btn--delete"
           type="button"
-          (click)="requestDelete(t)"
+          (click)="requestDelete(row.task)"
           aria-label="Delete task"
+          data-tooltip="Delete"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M3 6h18" />
@@ -171,80 +186,43 @@
     <div class="empty-state">
       <h3>No tasks match these filters</h3>
       <p>Try a different search, status, or priority, or clear your filters.</p>
-      <button class="btn btn-ghost" type="button" (click)="clearFilters()">Clear filters</button>
+      <button class="link-btn" type="button" (click)="clearFilters()">Clear filters</button>
     </div>
     }
   </div>
 
   <div class="table-footer">
     <div class="entries-info">
-      @if (totalFilteredCount > 0) { Showing {{ rangeStart }} to {{ rangeEnd }} of {{
-      totalFilteredCount }} entries } @else { No entries to show }
+      @if (totalFilteredCount() > 0) { Showing {{ rangeStart() }} to {{ rangeEnd() }} of
+      {{ totalFilteredCount() }} entries } @else { No entries to show }
     </div>
 
-    <div class="entries-per-page">
-      <label for="pageSize">Show</label>
-      <select id="pageSize" class="input" [(ngModel)]="pageSize" (ngModelChange)="onFilterChange()">
-        @for (n of pageSizeOptions; track n) {
-        <option [ngValue]="n">{{ n }}</option>
-        }
-      </select>
-      <span>entries</span>
-    </div>
-
-    @if (totalPages > 1) {
-    <div class="pagination">
-      <button
-        class="page-btn"
-        type="button"
-        [disabled]="currentPage === 1"
-        (click)="goToPage(currentPage - 1)"
-        aria-label="Previous page"
-      >
-        ‹
-      </button>
-      @for (p of visiblePageNumbers; track $index) { @if (p === 'ellipsis') {
-      <span class="page-ellipsis">…</span>
-      } @else {
-      <button
-        class="page-btn"
-        type="button"
-        [class.active]="p === currentPage"
-        (click)="goToPage(p)"
-      >
-        {{ p }}
-      </button>
-      } }
-      <button
-        class="page-btn"
-        type="button"
-        [disabled]="currentPage === totalPages"
-        (click)="goToPage(currentPage + 1)"
-        aria-label="Next page"
-      >
-        ›
-      </button>
-    </div>
-    }
+    <app-pagination
+      [currentPage]="currentPage()"
+      [totalItems]="totalFilteredCount()"
+      [pageSize]="pageSizeValue()"
+      (pageChange)="goToPage($event)"
+    ></app-pagination>
   </div>
   }
 </div>
 
-@if (taskPendingDelete) {
+@if (taskPendingDelete()) {
 <app-confirm-dialog
-  title="Delete this task?"
-  [message]="deleteConfirmMessage"
-  confirmLabel="Delete task"
+  heading="Delete this task?"
+  [message]="deleteMessage()"
+  confirmLabel="Delete"
   [danger]="true"
-  [isBusy]="isDeleting"
+  [isBusy]="isDeleting()"
   (confirmed)="confirmDelete()"
   (cancelled)="cancelDelete()"
->
-</app-confirm-dialog>
-} @if (isModalOpen) {
-<app-task-form [task]="editingTask" (save)="handleSave($event)" (closed)="closeModal()">
-</app-task-form>
-} @if (viewingTask) {
-<app-task-detail [task]="viewingTask" (save)="handleDetailSave($event)" (closed)="closeDetail()">
-</app-task-detail>
+></app-confirm-dialog>
+} @if (isModalOpen()) {
+<app-task-form
+  [task]="editingTask()"
+  (save)="handleSave($event)"
+  (closed)="closeModal()"
+></app-task-form>
+} @if (viewingTask(); as task) {
+<app-task-detail [task]="task" (closed)="closeDetail()"></app-task-detail>
 }

@@ -1,0 +1,29 @@
+@if (totalPages > 1) {
+<div class="pagination">
+  <button
+    class="page-btn"
+    type="button"
+    [disabled]="isFirstPage"
+    (click)="goTo(currentPage - 1)"
+    aria-label="Previous page"
+  >
+    ‹
+  </button>
+  @for (p of pages; track $index) { @if (p === 'ellipsis') {
+  <span class="page-ellipsis">…</span>
+  } @else {
+  <button class="page-btn" type="button" [class.active]="p === currentPage" (click)="goTo(p)">
+    {{ p }}
+  </button>
+  } }
+  <button
+    class="page-btn"
+    type="button"
+    [disabled]="isLastPage"
+    (click)="goTo(currentPage + 1)"
+    aria-label="Next page"
+  >
+    ›
+  </button>
+</div>
+}

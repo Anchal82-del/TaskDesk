@@ -21,33 +21,26 @@
       </button>
     </div>
   </div>
+</div>
 
-  <!-- <div class="setting-row">
+<div class="settings-section">
+  <h2>Notifications</h2>
+  <div class="setting-row">
     <div>
-      <div class="setting-label">Compact rows</div>
-      <div class="setting-desc">Show more tasks per screen with tighter row spacing.</div>
+      <div class="setting-label">In-app notifications</div>
+      <div class="setting-desc">
+        Show alerts in the bell icon when tasks are created, reassigned, moved or deleted.
+      </div>
     </div>
     <label class="switch">
-      <input type="checkbox" [checked]="compactRows()" (change)="onCompactRowsChange($event)" />
+      <input
+        #notifToggle
+        type="checkbox"
+        aria-label="In-app notifications"
+        [checked]="notificationsEnabled()"
+        (change)="onNotifToggle(notifToggle.checked)"
+      />
       <span class="switch-track"></span>
     </label>
-  </div>
-</div> -->
-
-  <div class="settings-section">
-    <h2>Notifications</h2>
-    <div class="setting-row">
-      <div>
-        <div class="setting-label">Email notifications</div>
-        <div class="setting-desc">Get notified when a task is assigned to you.</div>
-      </div>
-      <label class="switch">
-        <input type="checkbox" disabled />
-        <span class="switch-track"></span>
-      </label>
-    </div>
-    <p class="settings-note">
-      Notifications aren't connected to a server yet — this is a preview of the setting.
-    </p>
   </div>
 </div>

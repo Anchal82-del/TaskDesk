@@ -5,12 +5,12 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
   standalone: true,
   imports: [],
   templateUrl: './confirm-dialog.html',
-  styleUrl: './confirm-dialog.css',
+  styleUrl: './confirm-dialog.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:keydown.escape)': 'onCancel()' }
 })
 export class ConfirmDialogComponent {
-  @Input() title = 'Are you sure?';
+  @Input() heading = 'Are you sure?';
   @Input() message = 'This action cannot be undone.';
   @Input() confirmLabel = 'Yes, continue';
   @Input() cancelLabel = 'Cancel';
@@ -19,6 +19,10 @@ export class ConfirmDialogComponent {
 
   @Output() confirmed = new EventEmitter<void>();
   @Output() cancelled = new EventEmitter<void>();
+
+  get confirmText(): string {
+    return this.isBusy ? 'Please wait…' : this.confirmLabel;
+  }
 
   onConfirm(): void {
     this.confirmed.emit();

@@ -1,15 +1,19 @@
 import { TestBed } from '@angular/core/testing';
-import { Settings } from './settings';
+import { SettingsService } from '@app/settings';
 
-describe('Settings', () => {
-  let service: Settings;
+describe('SettingsService', () => {
+  let service: SettingsService;
 
   beforeEach(() => {
+    localStorage.clear();
     TestBed.configureTestingModule({});
-    service = TestBed.inject(Settings);
+    service = TestBed.inject(SettingsService);
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
+  it('applies and stores the chosen theme', () => {
+    service.setTheme('dark');
+    expect(service.theme()).toBe('dark');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    expect(localStorage.getItem('taskdesk_theme')).toBe('dark');
   });
 });

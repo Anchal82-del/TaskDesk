@@ -1,23 +1,36 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './login/login';
-import { DashboardComponent } from './dashboard/dashboard';
-import { LoggedOutComponent } from './logged-out/logged-out';
-import { UsersComponent } from './users/users';
-import { SettingsPageComponent } from './settings-page/settings-page';
-import { AppShellComponent } from './app-shell/app-shell';
-import { authGuard } from './auth-guard';
+import { authGuard } from '@app/auth-guard';
 
+// Every page is lazy-loaded so it is only downloaded when the user first visits it.
 export const routes: Routes = [
-  { path: '', component: LoginComponent },
   {
     path: '',
-    component: AppShellComponent,
+    pathMatch: 'full',
+    loadComponent: () => import('@app/login/login').then((m) => m.LoginComponent)
+  },
+  {
+    path: '',
     canActivate: [authGuard],
+    loadComponent: () => import('@app/app-shell/app-shell').then((m) => m.AppShellComponent),
     children: [
-      { path: 'dashboard', component: DashboardComponent },
-      { path: 'users', component: UsersComponent },
-      { path: 'settings', component: SettingsPageComponent }
+      {
+        path: 'dashboard',
+        loadComponent: () => import('@app/dashboard/dashboard').then((m) => m.DashboardComponent)
+      },
+      {
+        path: 'users',
+        loadComponent: () => import('@app/users/users').then((m) => m.UsersComponent)
+      },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('@app/settings-page/settings-page').then((m) => m.SettingsPageComponent)
+      }
     ]
   },
-  { path: 'logged-out', component: LoggedOutComponent }
+  {
+    path: 'logged-out',
+    loadComponent: () => import('@app/logged-out/logged-out').then((m) => m.LoggedOutComponent)
+  },
+  { path: '**', redirectTo: '' }
 ];

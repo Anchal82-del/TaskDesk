@@ -1,3 +1,5 @@
+@use 'styles/variables' as *;
+
 .page {
   display: flex;
   flex-direction: column;
@@ -117,7 +119,7 @@
   overflow-y: auto;
 }
 
-@media (max-width: 900px) {
+@media (max-width: $breakpoint-lg) {
   .app-shell,
   .app-shell.sidebar-collapsed {
     grid-template-columns: 1fr;
@@ -139,4 +141,10 @@
     max-width: 1180px;
     overflow-x: hidden;
   }
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }

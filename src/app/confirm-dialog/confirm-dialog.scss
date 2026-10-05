@@ -1,6 +1,13 @@
+.confirm-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
 .confirm-dialog h2 {
   font-size: 18px;
-  margin-bottom: 10px;
+  padding-top: 3px;
 }
 .confirm-dialog p {
   color: var(--ink-soft);

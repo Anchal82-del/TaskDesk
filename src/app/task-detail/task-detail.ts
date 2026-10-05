@@ -2,53 +2,51 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  inject,
   Input,
-  OnChanges,
-  Output,
-  SimpleChanges
+  Output
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Task } from '../task.model';
+import { NgClass } from '@angular/common';
+import { ProjectService } from '@app/project';
+import {
+  TASK_PRIORITY_CLASSES,
+  TASK_PRIORITY_LABELS,
+  TASK_STATUS_CLASSES,
+  TASK_STATUS_LABELS
+} from '@app/task.constants';
+import { Task } from '@app/task.model';
+import { UserService } from '@app/user';
 
+// Read-only view of a task. Changes are made through the Edit form.
 @Component({
   selector: 'app-task-detail',
   standalone: true,
-  imports: [FormsModule],
+  imports: [NgClass],
   templateUrl: './task-detail.html',
-  styleUrl: './task-detail.css',
+  styleUrl: './task-detail.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:keydown.escape)': 'onClose()' }
 })
-export class TaskDetailComponent implements OnChanges {
+export class TaskDetailComponent {
+  private readonly userService = inject(UserService);
+  private readonly projectService = inject(ProjectService);
+
   @Input({ required: true }) task!: Task;
-  @Output() save = new EventEmitter<string>();
   @Output() closed = new EventEmitter<void>();
 
-  isEditingDescription = false;
-  draftDescription = '';
+  readonly statusLabel = TASK_STATUS_LABELS;
+  readonly priorityLabel = TASK_PRIORITY_LABELS;
+  readonly statusClass = TASK_STATUS_CLASSES;
+  readonly priorityClass = TASK_PRIORITY_CLASSES;
 
-  // Runs whenever a different task is passed in — resets the edit state
-  // so switching tasks doesn't leave a stale draft on screen.
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['task']) {
-      this.draftDescription = this.task.description;
-      this.isEditingDescription = false;
-    }
+  get reviewerName(): string {
+    return this.userService.getUserById(this.task.reviewerId)?.name ?? 'Unknown';
   }
-
-  startEdit(): void {
-    this.draftDescription = this.task.description;
-    this.isEditingDescription = true;
+  get assigneeName(): string {
+    return this.userService.getUserById(this.task.assigneeId)?.name ?? 'Unassigned';
   }
-
-  cancelEdit(): void {
-    this.draftDescription = this.task.description;
-    this.isEditingDescription = false;
-  }
-
-  saveDescription(): void {
-    this.save.emit(this.draftDescription.trim());
-    this.isEditingDescription = false;
+  get projectName(): string {
+    return this.projectService.getProjectById(this.task.projectId)?.name ?? '—';
   }
 
   onClose(): void {

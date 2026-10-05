@@ -13,7 +13,7 @@
   </div>
   @for (u of users; track u.id) {
   <div class="users-row">
-    <div class="user-name"><span class="avatar">{{ u.name.charAt(0) }}</span>{{ u.name }}</div>
+    <div class="user-name"><span class="avatar">{{ u.initial }}</span>{{ u.name }}</div>
     <div>{{ u.username }}</div>
     <div>{{ u.email }}</div>
   </div>

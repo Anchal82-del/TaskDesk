@@ -1,53 +1,66 @@
 <div class="modal-overlay">
-  <button
-    type="button"
-    class="modal-backdrop"
-    tabindex="-1"
-    aria-label="Close dialog"
-    (click)="onClose()"
-  ></button>
+  <div class="modal-backdrop" (click)="onClose()" aria-hidden="true"></div>
 
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="task-detail-title">
+  <div
+    class="modal modal--wide"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="task-detail-title"
+  >
     <div class="modal-header">
-      <h2 id="task-detail-title">Task details</h2>
+      <div class="modal-header-title">
+        <span class="task-id-chip">#{{ task.id }}</span>
+        <h2 id="task-detail-title">{{ task.title }}</h2>
+      </div>
       <button class="modal-close" type="button" (click)="onClose()" aria-label="Close">
         &times;
       </button>
     </div>
 
-    <div class="detail-block">
-      <div class="detail-label">Title</div>
-      <div class="detail-title">{{ task.title }}</div>
-    </div>
+    <div class="modal-body">
+      <dl class="modal-grid detail-grid">
+        <div class="detail-item">
+          <dt>Status</dt>
+          <dd>
+            <span class="badge" [ngClass]="statusClass[task.status]">{{
+              statusLabel[task.status]
+            }}</span>
+          </dd>
+        </div>
+        <div class="detail-item">
+          <dt>Priority</dt>
+          <dd>
+            <span class="priority-tag" [ngClass]="priorityClass[task.priority]">{{
+              priorityLabel[task.priority]
+            }}</span>
+          </dd>
+        </div>
+        <div class="detail-item">
+          <dt>Project</dt>
+          <dd>{{ projectName }}</dd>
+        </div>
+        <div class="detail-item">
+          <dt>Reviewer</dt>
+          <dd>{{ reviewerName }}</dd>
+        </div>
+        <div class="detail-item">
+          <dt>Assignee</dt>
+          <dd>{{ assigneeName }}</dd>
+        </div>
+      </dl>
 
-    <div class="detail-block">
-      <div class="detail-label-row">
+      <div class="detail-section">
         <div class="detail-label">Description</div>
-        @if (!isEditingDescription) {
-        <button type="button" class="text-btn" (click)="startEdit()">Edit</button>
+        @if (task.description) {
+        <p class="detail-description">{{ task.description }}</p>
+        } @else {
+        <p class="detail-description detail-description--empty">No description provided.</p>
         }
       </div>
-
-      @if (isEditingDescription) {
-      <textarea
-        class="input"
-        rows="5"
-        [(ngModel)]="draftDescription"
-        placeholder="Add a description…"
-      ></textarea>
-      <div class="detail-edit-actions">
-        <button type="button" class="btn btn-ghost" (click)="cancelEdit()">Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="saveDescription()">Save</button>
-      </div>
-      } @else { @if (task.description) {
-      <p class="detail-description">{{ task.description }}</p>
-      } @else {
-      <p class="detail-description detail-description--empty">No description yet.</p>
-      } }
     </div>
 
-    <div class="modal-actions">
-      <button type="button" class="btn btn-primary" (click)="onClose()">Close</button>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-ghost" (click)="onClose()">Close</button>
     </div>
   </div>
 </div>

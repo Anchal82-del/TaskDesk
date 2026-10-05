@@ -1,0 +1,39 @@
+<div class="notif-wrap">
+  <button
+    type="button"
+    class="notif-btn"
+    (click)="toggle()"
+    aria-label="Notifications"
+    [attr.data-tooltip]="tooltip"
+    data-tooltip-pos="bottom"
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.7 21a2 2 0 01-3.4 0" />
+    </svg>
+    @if (notifications.unreadCount() > 0) {
+    <span class="notif-badge">{{ badgeLabel }}</span>
+    }
+  </button>
+
+  @if (isOpen()) {
+  <div class="notif-panel" role="dialog" aria-label="Notifications">
+    <div class="notif-head">
+      <strong>Notifications</strong>
+      @if (notifications.items().length) {
+      <button type="button" class="link-btn" (click)="notifications.clearAll()">Clear all</button>
+      }
+    </div>
+    @if (!notifications.enabled()) {
+    <div class="notif-empty">Notifications are turned off in Settings.</div>
+    } @else { @for (n of notifications.items(); track n.id) {
+    <div class="notif-item" [class.unread]="!n.read">
+      <div>{{ n.message }}</div>
+      <div class="notif-time">{{ n.createdAt | date: 'd MMM, h:mm a' }}</div>
+    </div>
+    } @empty {
+    <div class="notif-empty">You're all caught up.</div>
+    } }
+  </div>
+  }
+</div>

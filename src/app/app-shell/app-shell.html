@@ -5,7 +5,9 @@
         type="button"
         class="hamburger-btn"
         (click)="toggleSidebar()"
-        [attr.aria-label]="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+        [attr.aria-label]="sidebarToggleLabel"
+        [attr.data-tooltip]="sidebarToggleLabel"
+        data-tooltip-pos="bottom"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M4 6h16M4 12h16M4 18h16" />
@@ -13,7 +15,12 @@
       </button>
       <div class="brand-mark">TaskDesk</div>
     </div>
-    <button class="btn btn-ghost btn-sm" type="button" (click)="openLogoutConfirm()">Logout</button>
+    <div class="header-right">
+      <app-notification-bell></app-notification-bell>
+      <button class="btn btn-ghost btn-sm" type="button" (click)="openLogoutConfirm()">
+        Logout
+      </button>
+    </div>
   </header>
 
   <div class="app-shell" [class.sidebar-collapsed]="sidebarCollapsed">
@@ -62,7 +69,15 @@
           >
             <circle cx="12" cy="12" r="3" />
             <path
-              d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.9 2.9l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.6V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.9-2.9l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.6-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.6-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.9-2.9l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.6V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.6 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.9 2.9l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.6 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.6 1z"
+              d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.9 2.9l-.1-.1
+                a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.6V21a2 2 0 11-4 0v-.1
+                a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.9-2.9l.1-.1
+                a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.6-1H3a2 2 0 110-4h.1
+                a1.7 1.7 0 001.6-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.9-2.9l.1.1
+                a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.6V3a2 2 0 114 0v.1
+                a1.7 1.7 0 001 1.6 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.9 2.9l-.1.1
+                a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.6 1H21a2 2 0 110 4h-.1
+                a1.7 1.7 0 00-1.6 1z"
             />
           </svg>
           <span class="nav-label">Settings</span>
@@ -78,8 +93,8 @@
 
 @if (isLogoutConfirmOpen) {
 <app-confirm-dialog
-  title="Log out of TaskDesk?"
-  message="You'll need to sign in again to access your tasks. Any unsaved changes will be lost."
+  heading="Log out of TaskDesk?"
+  [message]="logoutMessage"
   confirmLabel="Log out"
   [danger]="true"
   [isBusy]="isLoggingOut"

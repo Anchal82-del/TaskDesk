@@ -12,9 +12,6 @@
   </div>
 
   <div class="login-form-panel">
-    <!-- <div class="login-card">
-        <h2>Welcome back</h2> -->
-
     <div class="login-card">
       @if (errorMessage) {
       <div class="login-error">{{ errorMessage }}</div>
@@ -26,7 +23,7 @@
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
         <div class="field">
-          <label for="username">Username <span class="required-mark">*</span></label>
+          <label for="username">Username<span class="required-mark">*</span></label>
           <input
             class="input"
             type="text"
@@ -37,17 +34,17 @@
         </div>
 
         <div class="field">
-          <label for="password">Password <span class="required-mark">*</span></label>
+          <label for="password">Password<span class="required-mark">*</span></label>
           <div class="password-wrap">
             <input
               class="input"
-              [type]="showPassword ? 'text' : 'password'"
+              [type]="passwordInputType"
               id="password"
               formControlName="password"
               placeholder="Enter your password"
             />
             <button type="button" class="password-toggle" (click)="togglePassword()">
-              {{ showPassword ? 'Hide' : 'Show' }}
+              {{ passwordToggleLabel }}
             </button>
           </div>
         </div>
@@ -56,11 +53,11 @@
           <label class="checkbox-row">
             <input type="checkbox" formControlName="remember" /> Remember me
           </label>
-          <a href="#" class="link-muted" (click)="$event.preventDefault()">Forgot password?</a>
+          <a href="#" class="link-muted" (click)="onForgotPassword($event)">Forgot password?</a>
         </div>
 
         <button type="submit" class="btn btn-primary btn-block" [disabled]="isSubmitting">
-          {{ isSubmitting ? 'Signing in…' : 'Sign in' }}
+          {{ submitLabel }}
         </button>
       </form>
 
