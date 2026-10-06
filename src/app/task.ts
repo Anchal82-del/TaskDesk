@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, catchError, map, of, shareReplay, tap } from 'rxjs';
 import { environment } from '@env/environment';
 import { Task, TaskInput } from '@app/task.model';
+import { AuthService } from '@app/auth';
 
 export interface ApiResponse<T> {
   status: string;
@@ -19,6 +20,7 @@ export interface ApiResponse<T> {
 })
 export class TaskService {
   private readonly http = inject(HttpClient, { optional: true });
+  private readonly auth = inject(AuthService);
   private readonly baseUrl = `${environment.apiUrl}/tasks`;
 
   private tasks: Task[] = [
@@ -58,7 +60,7 @@ export class TaskService {
       description: 'Check the new filtering logic.',
       priority: 'high',
       status: 'progress',
-      reviewerId: 4,
+      reviewerId: 1,
       assigneeId: 4,
       projectId: 3
     },
@@ -68,7 +70,7 @@ export class TaskService {
       description: 'Add screenshots for the new dashboard.',
       priority: 'low',
       status: 'done',
-      reviewerId: 2,
+      reviewerId: 4,
       assigneeId: 1,
       projectId: 2
     },
@@ -78,8 +80,8 @@ export class TaskService {
       description: 'Book a room and prep discussion topics.',
       priority: 'medium',
       status: 'done',
-      reviewerId: 1,
-      assigneeId: 2,
+      reviewerId: 3,
+      assigneeId: 4,
       projectId: 1
     },
     {
@@ -88,7 +90,7 @@ export class TaskService {
       description: 'Automated build and test on every push.',
       priority: 'high',
       status: 'todo',
-      reviewerId: 4,
+      reviewerId: 2,
       assigneeId: 3,
       projectId: 3
     },
@@ -98,8 +100,8 @@ export class TaskService {
       description: 'Run an automated and manual accessibility pass.',
       priority: 'medium',
       status: 'todo',
-      reviewerId: 3,
-      assigneeId: 4,
+      reviewerId: 4,
+      assigneeId: 2,
       projectId: 1
     }
   ];
@@ -118,12 +120,14 @@ export class TaskService {
     if (this.http && !this.hasLoadedFromApi) {
       this.refreshTasks().subscribe();
     }
-    return this.tasksSubject.asObservable();
+    return this.tasksSubject.asObservable().pipe(
+      map((all) => this.filterForCurrentUser(all))
+    );
   }
 
   refreshTasks(): Observable<Task[]> {
     if (!this.http) {
-      return of(this.tasks);
+      return of(this.filterForCurrentUser(this.tasks));
     }
     return this.http.get<ApiResponse<Task[]>>(this.baseUrl).pipe(
       map((res) => res.data),
@@ -135,9 +139,10 @@ export class TaskService {
           this.hasLoadedFromApi = true;
         }
       }),
+      map((tasks) => this.filterForCurrentUser(tasks)),
       catchError((error) => {
         console.warn('Could not fetch tasks from backend API. Using local state.', error);
-        return of(this.tasksSubject.value);
+        return of(this.filterForCurrentUser(this.tasksSubject.value));
       }),
       shareReplay(1)
     );
@@ -228,5 +233,11 @@ export class TaskService {
 
     req$.subscribe({ error: (err) => console.debug('Task API error:', err) });
     return req$;
+  }
+
+  private filterForCurrentUser(taskList: Task[]): Task[] {
+    const user = this.auth.getCurrentUser();
+    if (!user) return taskList;
+    return taskList.filter((t) => t.reviewerId === user.id || t.assigneeId === user.id);
   }
 }

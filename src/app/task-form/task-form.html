@@ -87,34 +87,44 @@
             <label for="reviewerId">Reviewer<span class="required-mark">*</span></label>
             <select
               class="input"
-              [class.input-error]="isInvalid('reviewerId')"
+              [class.input-error]="isInvalid('reviewerId') || hasReviewerAssigneeConflict"
               id="reviewerId"
               formControlName="reviewerId"
             >
               <option [ngValue]="null" disabled>Select reviewer</option>
-              @for (u of users; track u.id) {
-              <option [ngValue]="u.id">{{ u.name }}</option>
+              @for (u of availableReviewers; track u.id) {
+              <option [ngValue]="u.id">
+                {{ u.name }}
+              </option>
               }
             </select>
             @if (isInvalid('reviewerId')) {
             <div class="field-error">Reviewer is required.</div>
             }
+            @if (hasReviewerAssigneeConflict) {
+            <div class="field-error">Reviewer cannot be the assignee.</div>
+            }
           </div>
           <div class="field">
-            <label for="assigneeId">Assignee<span class="required-mark">*</span></label>
+            <label for="assigneeId">Assignee<span class="required-mark">*</span> <small class="field-hint">(Default profile)</small></label>
             <select
               class="input"
-              [class.input-error]="isInvalid('assigneeId')"
+              [class.input-error]="isInvalid('assigneeId') || hasReviewerAssigneeConflict"
               id="assigneeId"
               formControlName="assigneeId"
             >
               <option [ngValue]="null" disabled>Select assignee</option>
               @for (u of users; track u.id) {
-              <option [ngValue]="u.id">{{ u.name }}</option>
+              <option [ngValue]="u.id">
+                {{ u.name }}{{ u.id === currentUser?.id ? ' (You)' : '' }}
+              </option>
               }
             </select>
             @if (isInvalid('assigneeId')) {
             <div class="field-error">Assignee is required.</div>
+            }
+            @if (hasReviewerAssigneeConflict) {
+            <div class="field-error">Assignee cannot be the reviewer.</div>
             }
           </div>
         </div>

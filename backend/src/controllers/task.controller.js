@@ -7,7 +7,8 @@ const { sendSuccess } = require('../utils/response');
 // service, choose the status code. No business rules here. Express 5 forwards errors from
 // async functions to the error middleware automatically, so no try/catch is needed.
 async function listTasks(req, res) {
-  const tasks = await taskService.getAllTasks(req.query);
+  const userId = req.user ? req.user.id : null;
+  const tasks = await taskService.getAllTasks(req.query, userId);
   return sendSuccess(res, 200, tasks);
 }
 

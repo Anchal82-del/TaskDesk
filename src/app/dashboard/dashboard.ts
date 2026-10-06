@@ -14,6 +14,8 @@ import { ConfirmDialogComponent } from '@app/confirm-dialog/confirm-dialog';
 import { ProjectService } from '@app/project';
 import { PaginationComponent } from '@app/shared/pagination/pagination';
 import { TaskService } from '@app/task';
+import { ToastService } from '@app/shared/toast/toast.service';
+import { AuthService } from '@app/auth';
 import {
   TASK_PRIORITY_CLASSES,
   TASK_PRIORITY_LABELS,
@@ -75,7 +77,10 @@ export class DashboardComponent {
   private readonly projectService = inject(ProjectService);
   private readonly taskExport = inject(TaskExportService);
   private readonly notifier = inject(TaskNotifierService);
+  private readonly toast = inject(ToastService);
+  private readonly auth = inject(AuthService);
 
+  readonly currentUser = this.auth.currentUser;
   readonly projects = this.projectService.getProjects();
   readonly statusOptions = TASK_STATUS_OPTIONS;
   readonly priorityOptions = TASK_PRIORITY_OPTIONS;
@@ -206,6 +211,7 @@ export class DashboardComponent {
 
   downloadCsv(): void {
     this.taskExport.exportToCsv(this.filteredTasks());
+    this.toast.info('Export successful', 'Tasks list has been downloaded as CSV.');
   }
 
   openAddModal(): void {
@@ -245,12 +251,28 @@ export class DashboardComponent {
       this.taskService.updateTask(editing.id, data).subscribe({
         next: () => {
           this.notifier.notifyUpdated(editing, data);
+          this.toast.success(
+            'Task updated successfully',
+            `Task #${editing.id} "${data.title}" was saved.`
+          );
+        },
+        error: (err: unknown) => {
+          const msg = err instanceof Error ? err.message : 'Could not update task.';
+          this.toast.error('Update failed', msg);
         }
       });
     } else {
       this.taskService.addTask(data).subscribe({
-        next: () => {
+        next: (created) => {
           this.notifier.notifyCreated(data);
+          this.toast.success(
+            'Task saved successfully',
+            `Task "${created.title}" was created.`
+          );
+        },
+        error: (err: unknown) => {
+          const msg = err instanceof Error ? err.message : 'Could not save task.';
+          this.toast.error('Save failed', msg);
         }
       });
     }
@@ -272,10 +294,16 @@ export class DashboardComponent {
     this.taskService.deleteTask(task.id).subscribe({
       next: () => {
         this.notifier.notifyDeleted(task);
+        this.toast.success(
+          'Task deleted successfully',
+          `Task #${task.id} "${task.title}" was permanently removed.`
+        );
         this.isDeleting.set(false);
         this.taskPendingDelete.set(null);
       },
-      error: () => {
+      error: (err: unknown) => {
+        const msg = err instanceof Error ? err.message : 'Could not delete task.';
+        this.toast.error('Delete failed', msg);
         this.isDeleting.set(false);
         this.taskPendingDelete.set(null);
       }

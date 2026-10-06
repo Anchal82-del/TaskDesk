@@ -16,41 +16,59 @@ function cleanDoc(doc) {
   return clone;
 }
 
-function buildMongoFilter(query = {}) {
-  const filter = {};
+function buildMongoFilter(query = {}, userId = null) {
+  const andClauses = [];
+
   if (query.status && query.status !== 'all') {
-    filter.status = query.status;
+    andClauses.push({ status: query.status });
   }
   if (query.priority && query.priority !== 'all') {
-    filter.priority = query.priority;
+    andClauses.push({ priority: query.priority });
   }
   if (query.projectId && query.projectId !== 'all') {
     const pId = Number(query.projectId);
     if (!Number.isNaN(pId)) {
-      filter.projectId = pId;
+      andClauses.push({ projectId: pId });
     }
   }
   if (query.search && typeof query.search === 'string' && query.search.trim()) {
     const s = query.search.trim();
     const asNum = Number(s.replace(/^#/, ''));
     if (!Number.isNaN(asNum)) {
-      filter.$or = [
-        { id: asNum },
-        { title: { $regex: s, $options: 'i' } },
-        { description: { $regex: s, $options: 'i' } }
-      ];
+      andClauses.push({
+        $or: [
+          { id: asNum },
+          { title: { $regex: s, $options: 'i' } },
+          { description: { $regex: s, $options: 'i' } }
+        ]
+      });
     } else {
-      filter.$or = [
-        { title: { $regex: s, $options: 'i' } },
-        { description: { $regex: s, $options: 'i' } }
-      ];
+      andClauses.push({
+        $or: [
+          { title: { $regex: s, $options: 'i' } },
+          { description: { $regex: s, $options: 'i' } }
+        ]
+      });
     }
   }
-  return filter;
+
+  if (userId && query.all !== 'true') {
+    andClauses.push({
+      $or: [{ reviewerId: userId }, { assigneeId: userId }]
+    });
+  }
+
+  if (andClauses.length === 0) return {};
+  if (andClauses.length === 1) return andClauses[0];
+  return { $and: andClauses };
 }
 
-function filterInMemory(list, query = {}) {
+function filterInMemory(list, query = {}, userId = null) {
   return list.filter((task) => {
+    if (userId && query.all !== 'true') {
+      const isRelated = task.reviewerId === userId || task.assigneeId === userId;
+      if (!isRelated) return false;
+    }
     if (query.status && query.status !== 'all' && task.status !== query.status) return false;
     if (query.priority && query.priority !== 'all' && task.priority !== query.priority) return false;
     if (query.projectId && query.projectId !== 'all' && task.projectId !== Number(query.projectId)) return false;
@@ -66,14 +84,14 @@ function filterInMemory(list, query = {}) {
   });
 }
 
-async function findAll(query = {}) {
+async function findAll(query = {}, userId = null) {
   if (isConnected()) {
-    const filter = buildMongoFilter(query);
+    const filter = buildMongoFilter(query, userId);
     const docs = await TaskModel.find(filter).sort({ id: 1 }).lean();
     return docs.map(cleanDoc);
   }
 
-  const filtered = filterInMemory(tasks, query);
+  const filtered = filterInMemory(tasks, query, userId);
   return structuredClone(filtered);
 }
 

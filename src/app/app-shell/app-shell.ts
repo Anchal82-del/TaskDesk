@@ -3,6 +3,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { AuthService } from '@app/auth';
 import { ConfirmDialogComponent } from '@app/confirm-dialog/confirm-dialog';
 import { NotificationBellComponent } from '@app/shared/notification-bell/notification-bell';
+import { ToastService } from '@app/shared/toast/toast.service';
 
 const LOGOUT_DELAY_MS = 400;
 
@@ -23,6 +24,7 @@ const LOGOUT_DELAY_MS = 400;
 export class AppShellComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
 
   readonly logoutMessage =
     'You will need to sign in again to access your tasks. Any unsaved changes will be lost.';
@@ -52,6 +54,7 @@ export class AppShellComponent {
     // Short delay so the loading state on the button is visible.
     setTimeout(() => {
       this.auth.logout();
+      this.toast.info('Signed out', 'You have been signed out.');
       this.router.navigate(['/logged-out']);
     }, LOGOUT_DELAY_MS);
   }

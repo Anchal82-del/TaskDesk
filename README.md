@@ -18,22 +18,35 @@ A full-stack Task Management application built with **Angular (v22)** and **Node
 - **Angular Services**: `TaskService` communicates with the backend via `HttpClient`, providing optimistic UI updates and reactive state streams.
 - **Template Control Flow**: Modern Angular `@if`, `@for`, and `@empty` control flows.
 - **Export to CSV**: Instant client-side CSV export of filtered tasks.
-- **In-App Toast Notifications**: Immediate visual feedback for create, update, and delete actions.
+- **In-App Toast Notifications (Top Right)**: Immediate visual feedback for create, update, delete, CSV export, sign-in, and error events.
+- **User Scoping**: Authenticated users only see tasks where they are the Assignee or Reviewer.
+- **Reviewer ≠ Assignee Constraint**: Dropdown restrictions and form validation guarantee that the reviewer and assignee for any task are never the same person.
+- **Quick Sign-In**: Easy team member credentials selector on the login card.
 
 ### Node.js / Express Backend
+- **Authentication & JWT Security**:
+  - `POST /api/v1/auth/login` (with bcrypt password verification & JWT token issuing)
+  - `GET /api/v1/auth/me` (retrieves current authenticated user)
+  - `GET /api/v1/users` (list team users)
 - **REST APIs**:
-  - `GET /api/tasks` (with optional filtering: `?status=...&priority=...&projectId=...&search=...`)
+  - `GET /api/tasks` (scoped to authenticated user; supports `?status=...&priority=...&projectId=...&search=...`)
   - `GET /api/tasks/:id`
-  - `POST /api/tasks`
-  - `PUT /api/tasks/:id`
+  - `POST /api/tasks` (with validation ensuring reviewerId !== assigneeId)
+  - `PUT /api/tasks/:id` (with validation ensuring reviewerId !== assigneeId)
   - `DELETE /api/tasks/:id`
   - `GET /api/health`
+- **Team Users Pre-seeded**:
+  - Anchal (`u541023`)
+  - Jyoti Singh (`u541024`)
+  - Vivek Kumar (`u541025`)
+  - Nikitha Amaresh (`u541026`)
+  - Default password: `Password@123`
 - **Separation of Concerns**: Clean layering across `routes`, `validators`, `controllers`, `services`, and `repositories`.
 - **Request Validation**: Schema validation powered by `Joi`.
 - **Centralized Error Handling**: Standardized JSON responses for validation errors, 404s, and unexpected exceptions.
 - **MongoDB Database Integration**:
-  - Mongoose schema with data modeling, auto-incrementing sequential task IDs (`#1`, `#2`, ...), timestamps, and validations.
-  - Automatic database seeding with initial sample tasks on first connection.
+  - Mongoose schema for tasks and users with sequential IDs, unique usernames/emails, timestamps, and schema validations.
+  - Automatic database seeding with initial sample tasks and team users on first connection.
   - Built-in graceful fallback to in-memory persistence when MongoDB is offline, allowing the server to start without crashing.
 - **Swagger / OpenAPI 3.0 Documentation**: Interactive API documentation available at `http://localhost:3000/api/docs`.
 

@@ -1,5 +1,6 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { AppNotification } from '@app/notification.model';
+import { AuthService } from '@app/auth';
 
 const ITEMS_KEY = 'taskdesk_notifications';
 const ENABLED_KEY = 'taskdesk_notifications_enabled';
@@ -11,15 +12,23 @@ function isNotification(value: unknown): value is AppNotification {
   return typeof item['id'] === 'number' && typeof item['message'] === 'string';
 }
 
-// In-app notifications, kept in localStorage so they survive a refresh.
-// No server needed; swap for an API later if you add a backend.
 @Injectable({
   providedIn: 'root'
 })
 export class NotificationService {
+  private readonly auth = inject(AuthService);
+
   readonly enabled = signal<boolean>(this.readEnabled());
-  readonly items = signal<AppNotification[]>(this.readItems());
+  readonly items = signal<AppNotification[]>([]);
   readonly unreadCount = computed(() => this.items().filter((n) => !n.read).length);
+
+  constructor() {
+    // Reload notifications from the active user's storage key whenever active user changes
+    effect(() => {
+      this.auth.currentUser();
+      this.items.set(this.readItems());
+    });
+  }
 
   add(message: string): void {
     if (!this.enabled()) return;
@@ -27,6 +36,27 @@ export class NotificationService {
     const next: AppNotification = { id: now + Math.random(), message, createdAt: now, read: false };
     this.items.set([next, ...this.items()].slice(0, MAX_ITEMS));
     this.persist();
+  }
+
+  // Adds a notification directly to another specific user's inbox
+  addForUser(userId: number, message: string): void {
+    if (!this.enabled()) return;
+    const currentId = this.auth.getCurrentUser()?.id;
+    if (currentId === userId) {
+      this.add(message);
+      return;
+    }
+    const now = Date.now();
+    const next: AppNotification = { id: now + Math.random(), message, createdAt: now, read: false };
+    const key = this.getStorageKey(userId);
+    try {
+      const raw = localStorage.getItem(key);
+      const parsed: unknown = raw ? JSON.parse(raw) : [];
+      const list = Array.isArray(parsed) ? parsed.filter(isNotification) : [];
+      localStorage.setItem(key, JSON.stringify([next, ...list].slice(0, MAX_ITEMS)));
+    } catch {
+      /* storage unavailable */
+    }
   }
 
   markAllRead(): void {
@@ -50,15 +80,20 @@ export class NotificationService {
 
   private persist(): void {
     try {
-      localStorage.setItem(ITEMS_KEY, JSON.stringify(this.items()));
+      localStorage.setItem(this.getStorageKey(), JSON.stringify(this.items()));
     } catch {
       /* storage unavailable */
     }
   }
 
-  private readItems(): AppNotification[] {
+  private getStorageKey(userId?: number): string {
+    const id = userId ?? this.auth.getCurrentUser()?.id;
+    return id ? `${ITEMS_KEY}_user_${id}` : ITEMS_KEY;
+  }
+
+  private readItems(userId?: number): AppNotification[] {
     try {
-      const raw = localStorage.getItem(ITEMS_KEY);
+      const raw = localStorage.getItem(this.getStorageKey(userId));
       const parsed: unknown = raw ? JSON.parse(raw) : [];
       return Array.isArray(parsed) ? parsed.filter(isNotification) : [];
     } catch {

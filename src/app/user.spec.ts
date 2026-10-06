@@ -10,7 +10,7 @@ describe('UserService', () => {
   });
 
   it('finds a user by id', () => {
-    expect(service.getUserById(1)?.name).toBe('Ananya Rao');
+    expect(service.getUserById(1)?.name).toBe('Anchal');
     expect(service.getUserById(999)).toBeUndefined();
   });
 });

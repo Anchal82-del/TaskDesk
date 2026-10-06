@@ -15,6 +15,14 @@ class AppError extends Error {
     return new AppError(400, 'VALIDATION_ERROR', message, details);
   }
 
+  static unauthorized(message = 'Authentication required') {
+    return new AppError(401, 'UNAUTHORIZED', message);
+  }
+
+  static forbidden(message = 'Access forbidden') {
+    return new AppError(403, 'FORBIDDEN', message);
+  }
+
   static notFound(message) {
     return new AppError(404, 'NOT_FOUND', message);
   }

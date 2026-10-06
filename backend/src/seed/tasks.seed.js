@@ -1,6 +1,8 @@
 'use strict';
 
-// Starting data - the same 8 tasks the Angular app currently uses as mock data.
+// Starting tasks seeded into the database or in-memory fallback.
+// Note: Reviewer and assignee are never the same person,
+// and all tasks belong to team users (IDs 1-4).
 module.exports = [
   {
     id: 1,
@@ -38,7 +40,7 @@ module.exports = [
     description: 'Check the new filtering logic.',
     priority: 'high',
     status: 'progress',
-    reviewerId: 4,
+    reviewerId: 1,
     assigneeId: 4,
     projectId: 3
   },
@@ -48,7 +50,7 @@ module.exports = [
     description: 'Add screenshots for the new dashboard.',
     priority: 'low',
     status: 'done',
-    reviewerId: 2,
+    reviewerId: 4,
     assigneeId: 1,
     projectId: 2
   },
@@ -58,8 +60,8 @@ module.exports = [
     description: 'Book a room and prep discussion topics.',
     priority: 'medium',
     status: 'done',
-    reviewerId: 1,
-    assigneeId: 2,
+    reviewerId: 3,
+    assigneeId: 4,
     projectId: 1
   },
   {
@@ -68,7 +70,7 @@ module.exports = [
     description: 'Automated build and test on every push.',
     priority: 'high',
     status: 'todo',
-    reviewerId: 4,
+    reviewerId: 2,
     assigneeId: 3,
     projectId: 3
   },
@@ -78,8 +80,8 @@ module.exports = [
     description: 'Run an automated and manual accessibility pass.',
     priority: 'medium',
     status: 'todo',
-    reviewerId: 3,
-    assigneeId: 4,
+    reviewerId: 4,
+    assigneeId: 2,
     projectId: 1
   }
 ];

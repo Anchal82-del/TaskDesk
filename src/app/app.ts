@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SettingsService } from '@app/settings';
+import { ToastContainerComponent } from '@app/shared/toast/toast-container';
 
 @Component({
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, ToastContainerComponent],
   selector: 'app-root',
   styleUrl: './app.scss',
   templateUrl: './app.html',

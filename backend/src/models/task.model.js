@@ -73,6 +73,12 @@ const taskSchema = new mongoose.Schema(
   }
 );
 
+taskSchema.pre('validate', function () {
+  if (this.reviewerId && this.assigneeId && Number(this.reviewerId) === Number(this.assigneeId)) {
+    this.invalidate('reviewerId', 'Reviewer cannot be the same person as Assignee');
+  }
+});
+
 const TaskModel = mongoose.models.Task || mongoose.model('Task', taskSchema);
 
 module.exports = TaskModel;

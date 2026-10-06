@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '@app/auth';
+import { ToastService } from '@app/shared/toast/toast.service';
 
 const USERNAME_PREFIX = 'u';
 const USERNAME_DIGIT_COUNT = 6;
@@ -18,6 +19,8 @@ export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  private readonly toast = inject(ToastService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   showPassword = false;
   errorMessage = '';
@@ -66,10 +69,19 @@ export class LoginComponent {
     }
 
     this.isSubmitting = true;
-    setTimeout(() => {
-      this.auth.login();
-      this.router.navigate(['/dashboard']);
-    }, 500);
+
+    this.auth.login(username.value.trim(), password.value).subscribe({
+      next: (user) => {
+        this.toast.success('Signed in successfully', `Welcome back, ${user.name}!`);
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err: Error) => {
+        this.isSubmitting = false;
+        this.errorMessage = err.message || 'Invalid username or password.';
+        this.toast.error('Authentication failed', this.errorMessage);
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   // Checks the username in stages so the message says exactly what to fix.

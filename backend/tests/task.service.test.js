@@ -2,6 +2,7 @@
 
 const { describe, it, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
+const seedTasks = require('../src/seed/tasks.seed');
 const taskRepository = require('../src/repositories/task.repository');
 const taskService = require('../src/services/task.service');
 
@@ -18,9 +19,19 @@ const NEW_TASK = {
 describe('task.service', () => {
   beforeEach(() => taskRepository.reset());
 
-  it('returns all seeded tasks', async () => {
+  it('returns all seeded tasks when no user filter', async () => {
     const tasks = await taskService.getAllTasks();
-    assert.equal(tasks.length, 8);
+    assert.equal(tasks.length, seedTasks.length);
+  });
+
+  it('filters tasks to only those where user is reviewer or assignee', async () => {
+    const userId = 1;
+    const userTasks = await taskService.getAllTasks({}, userId);
+    assert.ok(userTasks.length > 0);
+    assert.ok(userTasks.length < seedTasks.length);
+    for (const t of userTasks) {
+      assert.ok(t.reviewerId === userId || t.assigneeId === userId);
+    }
   });
 
   it('gets a task by id', async () => {
@@ -37,9 +48,10 @@ describe('task.service', () => {
   });
 
   it('creates a task with the next id', async () => {
+    const initialCount = seedTasks.length;
     const task = await taskService.createTask(NEW_TASK);
-    assert.equal(task.id, 9);
-    assert.equal((await taskService.getAllTasks()).length, 9);
+    assert.equal(task.id, initialCount + 1);
+    assert.equal((await taskService.getAllTasks()).length, initialCount + 1);
   });
 
   it('replaces a task, and repeating the same update gives the same result', async () => {
@@ -55,8 +67,9 @@ describe('task.service', () => {
   });
 
   it('deletes a task, then reports NOT_FOUND on a second delete', async () => {
+    const initialCount = seedTasks.length;
     await taskService.deleteTask(3);
-    assert.equal((await taskService.getAllTasks()).length, 7);
+    assert.equal((await taskService.getAllTasks()).length, initialCount - 1);
     await assert.rejects(taskService.deleteTask(3), { code: 'NOT_FOUND' });
   });
 

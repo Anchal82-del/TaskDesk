@@ -17,7 +17,12 @@ const taskBodySchema = Joi.object({
   status: Joi.string()
     .valid(...STATUSES)
     .required(),
-  reviewerId: id.required(),
+  reviewerId: id
+    .invalid(Joi.ref('assigneeId'))
+    .required()
+    .messages({
+      'any.invalid': 'Reviewer cannot be the assignee'
+    }),
   assigneeId: id.required(),
   projectId: id.required()
 });

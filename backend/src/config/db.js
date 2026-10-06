@@ -4,19 +4,27 @@ const mongoose = require('mongoose');
 const { env } = require('./env');
 const logger = require('../utils/logger');
 const seedTasks = require('../seed/tasks.seed');
+const seedUsers = require('../seed/users.seed');
 
 let isDbConnected = false;
 
-async function seedDatabaseIfEmpty(TaskModel) {
+async function seedDatabaseIfEmpty(TaskModel, UserModel) {
   try {
-    const count = await TaskModel.countDocuments();
-    if (count === 0) {
+    const taskCount = await TaskModel.countDocuments();
+    if (taskCount === 0) {
       logger.info('MongoDB tasks collection is empty. Seeding initial tasks...');
       await TaskModel.insertMany(seedTasks);
       logger.info(`Successfully seeded ${seedTasks.length} tasks into MongoDB.`);
     }
+
+    const userCount = await UserModel.countDocuments();
+    if (userCount === 0) {
+      logger.info('MongoDB users collection is empty. Seeding initial users...');
+      await UserModel.insertMany(seedUsers);
+      logger.info(`Successfully seeded ${seedUsers.length} users into MongoDB.`);
+    }
   } catch (error) {
-    logger.error('Failed to seed MongoDB tasks collection', { error: error.message });
+    logger.error('Failed to seed MongoDB collection', { error: error.message });
   }
 }
 
@@ -33,9 +41,10 @@ async function connectDB() {
     isDbConnected = true;
     logger.info(`Connected to MongoDB successfully (${env.mongoUri})`);
 
-    // Dynamically require Task model and seed if empty
+    // Dynamically require models and seed if empty
     const TaskModel = require('../models/task.model');
-    await seedDatabaseIfEmpty(TaskModel);
+    const UserModel = require('../models/user.model');
+    await seedDatabaseIfEmpty(TaskModel, UserModel);
   } catch (err) {
     isDbConnected = false;
     logger.warn(
