@@ -21,7 +21,6 @@ A full-stack Task Management application built with **Angular (v22)** and **Node
 - **In-App Toast Notifications (Top Right)**: Immediate visual feedback for create, update, delete, CSV export, sign-in, and error events.
 - **User Scoping**: Authenticated users only see tasks where they are the Assignee or Reviewer.
 - **Reviewer ≠ Assignee Constraint**: Dropdown restrictions and form validation guarantee that the reviewer and assignee for any task are never the same person.
-- **Quick Sign-In**: Easy team member credentials selector on the login card.
 
 ### Node.js / Express Backend
 - **Authentication & JWT Security**:
