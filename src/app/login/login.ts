@@ -78,7 +78,6 @@ export class LoginComponent {
       error: (err: Error) => {
         this.isSubmitting = false;
         this.errorMessage = err.message || 'Invalid username or password.';
-        this.toast.error('Authentication failed', this.errorMessage);
         this.cdr.markForCheck();
       }
     });

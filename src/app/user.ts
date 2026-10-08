@@ -28,7 +28,15 @@ export class UserService {
         )
         .subscribe((data) => {
           if (Array.isArray(data) && data.length > 0) {
-            this.users = data;
+            const excluded = ['tarun', 'shoba', 'shobha', 'u541027', 'u541028'];
+            this.users = data.filter(
+              (u) =>
+                !excluded.some(
+                  (ex) =>
+                    u.name.toLowerCase().includes(ex) ||
+                    u.username.toLowerCase().includes(ex)
+                )
+            );
           }
         });
     }

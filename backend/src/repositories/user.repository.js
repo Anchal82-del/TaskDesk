@@ -19,17 +19,34 @@ function cleanDoc(doc, includePassword = false) {
   return clone;
 }
 
+const EXCLUDED_USERNAMES = ['u541027', 'u541028'];
+const EXCLUDED_NAMES = ['tarun', 'shoba', 'shobha'];
+
+function isExcludedUser(user) {
+  if (!user) return false;
+  const username = String(user.username || '').toLowerCase();
+  const name = String(user.name || '').toLowerCase();
+  return (
+    EXCLUDED_USERNAMES.includes(username) ||
+    EXCLUDED_NAMES.some((ex) => name.includes(ex) || username.includes(ex))
+  );
+}
+
 async function findAll() {
   if (isConnected()) {
     const docs = await UserModel.find().sort({ id: 1 }).lean();
-    return docs.map((doc) => cleanDoc(doc, false));
+    return docs
+      .map((doc) => cleanDoc(doc, false))
+      .filter((u) => !isExcludedUser(u));
   }
 
-  return structuredClone(users).map((u) => {
-    const clone = { ...u };
-    delete clone.password;
-    return clone;
-  });
+  return structuredClone(users)
+    .filter((u) => !isExcludedUser(u))
+    .map((u) => {
+      const clone = { ...u };
+      delete clone.password;
+      return clone;
+    });
 }
 
 async function findById(id) {

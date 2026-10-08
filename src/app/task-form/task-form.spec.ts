@@ -51,4 +51,43 @@ describe('TaskFormComponent', () => {
     component.taskForm.controls.assigneeId.setValue(2);
     expect(component.availableReviewers.some((u) => u.id === 2)).toBe(false);
   });
+
+  it('excludes the reviewer from available assignees', () => {
+    component.taskForm.controls.reviewerId.setValue(1);
+    expect(component.availableAssignees.some((u) => u.id === 1)).toBe(false);
+  });
+
+  it('uses Update button in edit mode and Save task in create mode', () => {
+    expect(component.submitLabel).toBe('Save task');
+    component.task = {
+      id: 99,
+      title: 'Existing',
+      description: '',
+      priority: 'low',
+      status: 'todo',
+      reviewerId: 1,
+      assigneeId: 2,
+      projectId: 1
+    };
+    expect(component.submitLabel).toBe('Update');
+  });
+
+  it('keeps assignee and reviewer controls enabled in both create and edit modes', () => {
+    expect(component.taskForm.controls.assigneeId.enabled).toBe(true);
+    expect(component.taskForm.controls.reviewerId.enabled).toBe(true);
+
+    component.task = {
+      id: 99,
+      title: 'Existing',
+      description: '',
+      priority: 'low',
+      status: 'todo',
+      reviewerId: 1,
+      assigneeId: 2,
+      projectId: 1
+    };
+    component.ngOnInit();
+    expect(component.taskForm.controls.assigneeId.enabled).toBe(true);
+    expect(component.taskForm.controls.reviewerId.enabled).toBe(true);
+  });
 });

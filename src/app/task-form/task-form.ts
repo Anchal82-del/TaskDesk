@@ -1,12 +1,15 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
+  DestroyRef,
   EventEmitter,
   inject,
   Input,
   OnInit,
   Output
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
   FormBuilder,
@@ -52,12 +55,17 @@ export class TaskFormComponent implements OnInit {
   private readonly userService = inject(UserService);
   private readonly projectService = inject(ProjectService);
   private readonly auth = inject(AuthService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly destroyRef = inject(DestroyRef);
 
   @Input() task: Task | null = null;
   @Output() save = new EventEmitter<TaskInput>();
   @Output() closed = new EventEmitter<void>();
 
-  readonly users = this.userService.getUsers();
+  get users(): User[] {
+    return this.userService.getUsers();
+  }
+
   readonly projects = this.projectService.getProjects();
   readonly priorityOptions = TASK_PRIORITY_OPTIONS;
   readonly statusOptions = TASK_STATUS_OPTIONS;
@@ -86,20 +94,33 @@ export class TaskFormComponent implements OnInit {
   }
 
   get submitLabel(): string {
-    return this.isEditMode ? 'Save' : 'Save task';
+    return this.isEditMode ? 'Update' : 'Save task';
   }
 
   get currentUser(): User | null {
     return this.auth.getCurrentUser();
   }
 
-  // The reviewer dropdown excludes whoever is the assignee (and the creator),
-  // ensuring the signed-in user or assignee cannot be selected as reviewer.
+  // The reviewer dropdown excludes whoever is selected as assignee,
+  // ensuring assignee and reviewer cannot be the same user.
   get availableReviewers(): User[] {
     const raw = this.taskForm.getRawValue();
-    const currentUserId = this.auth.getCurrentUser()?.id;
-    const excludedId = raw.assigneeId ?? currentUserId;
-    return this.users.filter((u) => u.id !== excludedId);
+    const assigneeId = raw.assigneeId;
+    if (!assigneeId) {
+      return this.users;
+    }
+    return this.users.filter((u) => u.id !== Number(assigneeId));
+  }
+
+  // The assignee dropdown excludes whoever is selected as reviewer,
+  // ensuring reviewer and assignee cannot be the same user.
+  get availableAssignees(): User[] {
+    const raw = this.taskForm.getRawValue();
+    const reviewerId = raw.reviewerId;
+    if (!reviewerId) {
+      return this.users;
+    }
+    return this.users.filter((u) => u.id !== Number(reviewerId));
   }
 
   get hasReviewerAssigneeConflict(): boolean {
@@ -115,6 +136,12 @@ export class TaskFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.taskForm.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.cdr.markForCheck();
+      });
+
     if (this.task) {
       this.taskForm.patchValue({
         title: this.task.title,
@@ -125,14 +152,6 @@ export class TaskFormComponent implements OnInit {
         assigneeId: this.task.assigneeId,
         projectId: this.task.projectId
       });
-      this.taskForm.controls.assigneeId.disable();
-    } else {
-      // For a new task: pre-select the signed-in user as assignee and lock it so it cannot be changed.
-      const current = this.auth.getCurrentUser();
-      if (current) {
-        this.taskForm.controls.assigneeId.setValue(current.id);
-        this.taskForm.controls.assigneeId.disable();
-      }
     }
   }
 

@@ -106,7 +106,7 @@
             }
           </div>
           <div class="field">
-            <label for="assigneeId">Assignee<span class="required-mark">*</span> <small class="field-hint">(Default profile)</small></label>
+            <label for="assigneeId">Assignee<span class="required-mark">*</span></label>
             <select
               class="input"
               [class.input-error]="isInvalid('assigneeId') || hasReviewerAssigneeConflict"
@@ -114,9 +114,9 @@
               formControlName="assigneeId"
             >
               <option [ngValue]="null" disabled>Select assignee</option>
-              @for (u of users; track u.id) {
+              @for (u of availableAssignees; track u.id) {
               <option [ngValue]="u.id">
-                {{ u.name }}{{ u.id === currentUser?.id ? ' (You)' : '' }}
+                {{ u.name }}
               </option>
               }
             </select>

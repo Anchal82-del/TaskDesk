@@ -3,12 +3,12 @@
 const { Router } = require('express');
 const taskController = require('../controllers/task.controller');
 const validate = require('../middleware/validate');
-const { optionalAuthenticate } = require('../middleware/auth.middleware');
+const { authenticate } = require('../middleware/auth.middleware');
 const { taskBodySchema, taskParamsSchema } = require('../validators/task.validator');
 
 const router = Router();
 
-router.use(optionalAuthenticate);
+router.use(authenticate);
 
 router.get('/', taskController.listTasks);
 router.get('/:id', validate(taskParamsSchema, 'params'), taskController.getTask);
