@@ -1,6 +1,20 @@
+export interface NotificationMetadata {
+  requestId?: number;
+  requesterName?: string;
+  employeeId?: string;
+  submittedAt?: string | Date;
+  status?: string;
+  [key: string]: unknown;
+}
+
 export interface AppNotification {
   id: number;
+  userId?: number;
+  senderId?: number | null;
   message: string;
-  createdAt: number;
+  type?: string;
+  entityId?: number | null;
+  metadata?: NotificationMetadata;
+  createdAt: number | string | Date;
   read: boolean;
 }

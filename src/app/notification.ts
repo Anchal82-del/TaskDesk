@@ -1,10 +1,22 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { catchError, map, of, tap } from 'rxjs';
 import { AppNotification } from '@app/notification.model';
 import { AuthService } from '@app/auth';
+import { environment } from '@env/environment';
 
 const ITEMS_KEY = 'taskdesk_notifications';
 const ENABLED_KEY = 'taskdesk_notifications_enabled';
 const MAX_ITEMS = 30;
+
+interface ApiResponse<T> {
+  status: string;
+  data: T;
+  error?: {
+    code: string;
+    message: string;
+  };
+}
 
 function isNotification(value: unknown): value is AppNotification {
   if (typeof value !== 'object' || value === null) return false;
@@ -16,18 +28,72 @@ function isNotification(value: unknown): value is AppNotification {
   providedIn: 'root'
 })
 export class NotificationService {
+  private readonly http = inject(HttpClient, { optional: true });
   private readonly auth = inject(AuthService);
+  private readonly baseUrl = `${environment.apiUrl}/notifications`;
 
   readonly enabled = signal<boolean>(this.readEnabled());
   readonly items = signal<AppNotification[]>([]);
   readonly unreadCount = computed(() => this.items().filter((n) => !n.read).length);
 
+  private pollTimer: ReturnType<typeof setInterval> | null = null;
+
   constructor() {
-    // Reload notifications from the active user's storage key whenever active user changes
+    // Whenever current user changes, reload notifications
     effect(() => {
-      this.auth.currentUser();
-      this.items.set(this.readItems());
+      const user = this.auth.currentUser();
+      if (user) {
+        this.fetchNotifications().subscribe();
+        this.startPolling();
+      } else {
+        this.stopPolling();
+        this.items.set([]);
+      }
     });
+  }
+
+  private getHeaders(): HttpHeaders {
+    const token = this.auth.getToken();
+    return token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders();
+  }
+
+  private startPolling(): void {
+    if (this.pollTimer) return;
+    this.pollTimer = setInterval(() => {
+      if (this.auth.isLoggedIn() && (typeof document === 'undefined' || !document.hidden)) {
+        this.fetchNotifications().subscribe();
+      }
+    }, 5000);
+  }
+
+  private stopPolling(): void {
+    if (this.pollTimer) {
+      clearInterval(this.pollTimer);
+      this.pollTimer = null;
+    }
+  }
+
+  fetchNotifications() {
+    if (!this.http || !this.auth.isLoggedIn()) {
+      this.items.set(this.readLocalItems());
+      return of(this.items());
+    }
+
+    return this.http
+      .get<ApiResponse<AppNotification[]>>(this.baseUrl, {
+        headers: this.getHeaders()
+      })
+      .pipe(
+        map((res) => res.data || []),
+        tap((remoteList) => {
+          this.items.set(remoteList);
+          this.persistLocal(remoteList);
+        }),
+        catchError(() => {
+          this.items.set(this.readLocalItems());
+          return of(this.items());
+        })
+      );
   }
 
   add(message: string): void {
@@ -35,10 +101,9 @@ export class NotificationService {
     const now = Date.now();
     const next: AppNotification = { id: now + Math.random(), message, createdAt: now, read: false };
     this.items.set([next, ...this.items()].slice(0, MAX_ITEMS));
-    this.persist();
+    this.persistLocal(this.items());
   }
 
-  // Adds a notification directly to another specific user's inbox
   addForUser(userId: number, message: string): void {
     if (!this.enabled()) return;
     const currentId = this.auth.getCurrentUser()?.id;
@@ -59,14 +124,45 @@ export class NotificationService {
     }
   }
 
+  markAsRead(id: number): void {
+    this.items.set(
+      this.items().map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+    this.persistLocal(this.items());
+
+    if (this.http && this.auth.isLoggedIn()) {
+      this.http
+        .patch(`${this.baseUrl}/${id}/read`, {}, { headers: this.getHeaders() })
+        .pipe(catchError(() => of(null)))
+        .subscribe();
+    }
+  }
+
   markAllRead(): void {
+    const hasUnread = this.items().some((n) => !n.read);
+    if (!hasUnread) return;
+
     this.items.set(this.items().map((n) => ({ ...n, read: true })));
-    this.persist();
+    this.persistLocal(this.items());
+
+    if (this.http && this.auth.isLoggedIn()) {
+      this.http
+        .post(`${this.baseUrl}/mark-all-read`, {}, { headers: this.getHeaders() })
+        .pipe(catchError(() => of(null)))
+        .subscribe();
+    }
   }
 
   clearAll(): void {
     this.items.set([]);
-    this.persist();
+    this.persistLocal([]);
+
+    if (this.http && this.auth.isLoggedIn()) {
+      this.http
+        .delete(this.baseUrl, { headers: this.getHeaders() })
+        .pipe(catchError(() => of(null)))
+        .subscribe();
+    }
   }
 
   setEnabled(value: boolean): void {
@@ -78,9 +174,9 @@ export class NotificationService {
     }
   }
 
-  private persist(): void {
+  private persistLocal(list: AppNotification[]): void {
     try {
-      localStorage.setItem(this.getStorageKey(), JSON.stringify(this.items()));
+      localStorage.setItem(this.getStorageKey(), JSON.stringify(list));
     } catch {
       /* storage unavailable */
     }
@@ -91,7 +187,7 @@ export class NotificationService {
     return id ? `${ITEMS_KEY}_user_${id}` : ITEMS_KEY;
   }
 
-  private readItems(userId?: number): AppNotification[] {
+  private readLocalItems(userId?: number): AppNotification[] {
     try {
       const raw = localStorage.getItem(this.getStorageKey(userId));
       const parsed: unknown = raw ? JSON.parse(raw) : [];

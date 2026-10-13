@@ -49,13 +49,6 @@
           </div>
         </div>
 
-        <div class="row-between">
-          <label class="checkbox-row">
-            <input type="checkbox" formControlName="remember" /> Remember me
-          </label>
-          <a href="#" class="link-muted" (click)="onForgotPassword($event)">Forgot password?</a>
-        </div>
-
         <button type="submit" class="btn btn-primary btn-block" [disabled]="isSubmitting">
           {{ submitLabel }}
         </button>

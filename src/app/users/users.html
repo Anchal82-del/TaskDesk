@@ -1,21 +1,328 @@
 <div class="topbar">
   <div>
     <h1>Users</h1>
-    <div class="sub">Everyone with access to TaskDesk.</div>
+    <div class="sub">Team directory and member profiles.</div>
+  </div>
+
+  <div class="topbar-actions">
+    <button
+      type="button"
+      class="btn btn-ghost btn-sm template-btn"
+      (click)="downloadTemplate()"
+      title="Download sample CSV template"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+      Template
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-primary btn-sm upload-btn"
+      (click)="triggerFileInput()"
+      [disabled]="isImporting()"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
+        <polyline points="17 8 12 3 7 8"></polyline>
+        <line x1="12" y1="3" x2="12" y2="15"></line>
+      </svg>
+      {{ isImporting() ? 'Importing…' : 'Upload CSV / Excel' }}
+    </button>
+
+    <input
+      #fileInput
+      type="file"
+      accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .xlsx, .xls"
+      (change)="onFileSelected($event)"
+      hidden
+    />
   </div>
 </div>
 
-<div class="users-list">
-  <div class="users-list-head">
-    <div>Name</div>
-    <div>Username</div>
-    <div>Email</div>
+<!-- Controls Bar: Search & Tabs -->
+<div class="users-controls">
+  <div class="search-box">
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Search by name, email, or employee ID..."
+      [ngModel]="searchQuery()"
+      (ngModelChange)="searchQuery.set($event)"
+      aria-label="Search users"
+    />
+    @if (searchQuery()) {
+    <button class="clear-search" (click)="searchQuery.set('')" aria-label="Clear search">&times;</button>
+    }
   </div>
-  @for (u of users; track u.id) {
-  <div class="users-row">
-    <div class="user-name"><span class="avatar">{{ u.initial }}</span>{{ u.name }}</div>
-    <div>{{ u.username }}</div>
-    <div>{{ u.email }}</div>
+
+  <div class="filter-tabs">
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="selectedTab() === 'all'"
+      (click)="setTab('all')"
+    >
+      All <span class="tab-count">({{ counts().all }})</span>
+    </button>
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="selectedTab() === 'admin'"
+      (click)="setTab('admin')"
+    >
+      Admins <span class="tab-count">({{ counts().admins }})</span>
+    </button>
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="selectedTab() === 'user'"
+      (click)="setTab('user')"
+    >
+      Users <span class="tab-count">({{ counts().users }})</span>
+    </button>
   </div>
-  }
 </div>
+
+<!-- Users Table -->
+<div class="users-table-container">
+  <table class="users-table">
+    <thead>
+      <tr>
+        <th class="col-id">Employee ID</th>
+        <th class="col-name">Full Name and Email</th>
+        <th class="col-role">Role</th>
+        <th class="col-actions text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (u of users(); track u.id) {
+      <tr [class.highlight-row]="u.id === currentUser()?.id">
+        <!-- 1. Employee ID -->
+        <td class="col-id">
+          <span class="employee-id-chip">{{ u.username }}</span>
+        </td>
+
+        <!-- 2. Full Name and Email -->
+        <td class="col-name">
+          <div class="user-name-cell">
+            <span
+              class="avatar"
+              [class.avatar--super]="isSuperAdmin(u)"
+              [class.avatar--admin]="!isSuperAdmin(u) && isAdminUser(u)"
+            >
+              {{ u.initial }}
+            </span>
+            <div class="user-text">
+              <div class="user-full-name-row">
+                <span class="user-full-name">{{ u.name }}</span>
+                @if (u.id === currentUser()?.id) {
+                <span class="you-tag">You</span>
+                }
+              </div>
+              <span class="user-email-sub">{{ u.email }}</span>
+            </div>
+          </div>
+        </td>
+
+        <!-- 3. Role (Single badge) -->
+        <td class="col-role">
+          @if (isSuperAdmin(u)) {
+          <span class="badge badge--super">Super Admin</span>
+          } @else if (isAdminUser(u)) {
+          <span class="badge badge--admin">Admin</span>
+          } @else {
+          <span class="badge badge--user">User</span>
+          }
+        </td>
+
+        <!-- 4. Actions (View & Remove buttons) -->
+        <td class="col-actions text-right">
+          <div class="row-actions">
+            <button
+              type="button"
+              class="action-btn"
+              (click)="openViewModal(u)"
+              title="View user details"
+              aria-label="View user details"
+              data-tooltip="View"
+              data-tooltip-pos="left"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+
+            @if (canDeleteUser(u)) {
+            <button
+              type="button"
+              class="action-btn action-btn--danger"
+              (click)="openDeleteConfirm(u)"
+              title="Remove user"
+              aria-label="Remove user"
+              data-tooltip="Remove"
+              data-tooltip-pos="left"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+            </button>
+            }
+          </div>
+        </td>
+      </tr>
+      } @empty {
+      <tr>
+        <td colspan="4" class="no-users-cell">
+          <div class="empty-state">
+            <p>No team members found matching "{{ searchQuery() }}"</p>
+            <button type="button" class="link-btn" (click)="searchQuery.set(''); selectedTab.set('all')">
+              Reset search
+            </button>
+          </div>
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<!-- Compact User Details Modal -->
+@if (viewingUser()) {
+<div class="modal-overlay">
+  <div class="modal-backdrop" (click)="closeViewModal()" aria-hidden="true"></div>
+  <div class="modal user-dialog" role="dialog" aria-modal="true" aria-labelledby="view-user-title">
+    <div class="modal-header">
+      <div class="dialog-header-info">
+        <span
+          class="avatar avatar--lg"
+          [class.avatar--super]="isSuperAdmin(viewingUser())"
+          [class.avatar--admin]="!isSuperAdmin(viewingUser()) && isAdminUser(viewingUser())"
+        >
+          {{ getInitials(viewingUser()?.name) }}
+        </span>
+        <div>
+          <h2 id="view-user-title">{{ viewingUser()?.name }}</h2>
+          <div class="dialog-sub">
+            @if (isSuperAdmin(viewingUser())) {
+            <span class="badge badge--super">Super Admin</span>
+            } @else if (isAdminUser(viewingUser())) {
+            <span class="badge badge--admin">Admin</span>
+            } @else {
+            <span class="badge badge--user">User</span>
+            }
+          </div>
+        </div>
+      </div>
+      <button class="modal-close" type="button" (click)="closeViewModal()" aria-label="Close">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="dialog-details-list">
+        <div class="detail-row">
+          <span class="label">Employee ID</span>
+          <span class="val font-mono">{{ viewingUser()?.username }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Email Address</span>
+          <span class="val">{{ viewingUser()?.email }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-ghost" (click)="closeViewModal()">Close</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Confirm Delete User Modal -->
+@if (userPendingDelete()) {
+<app-confirm-dialog
+  heading="Remove team member?"
+  [message]="'Are you sure you want to remove ' + userPendingDelete()?.name + ' (' + userPendingDelete()?.username + ')? They will no longer be able to log in or access TaskDesk.'"
+  confirmLabel="Remove user"
+  [danger]="true"
+  [isBusy]="isDeletingUser()"
+  (confirmed)="confirmDeleteUser()"
+  (cancelled)="cancelDelete()"
+></app-confirm-dialog>
+}
+
+<!-- Confirm User Import Preview Modal -->
+@if (isImportModalOpen()) {
+<div class="modal-overlay">
+  <div class="modal-backdrop" (click)="cancelImport()" aria-hidden="true"></div>
+  <div class="modal modal--wide import-modal" role="dialog" aria-modal="true" aria-labelledby="import-modal-title">
+    <div class="modal-header">
+      <div>
+        <h2 id="import-modal-title">Confirm User Import</h2>
+        <div class="dialog-sub">
+          Review the <strong>{{ pendingImportUsers().length }}</strong> member(s) found in <strong>{{ pendingImportFileName() }}</strong> before adding.
+        </div>
+      </div>
+      <button class="modal-close" type="button" (click)="cancelImport()" aria-label="Close">&times;</button>
+    </div>
+
+    <div class="modal-body import-modal-body">
+      <div class="import-stats-box">
+        <div class="import-stat-pill">
+          <span class="stat-count">{{ pendingImportUsers().length }}</span>
+          <span class="stat-label">to be imported</span>
+        </div>
+        <p class="import-note-text">
+          Existing team members with matching employee IDs or email addresses will be skipped automatically.
+        </p>
+      </div>
+
+      <div class="import-preview-table-container">
+        <table class="import-preview-table">
+          <thead>
+            <tr>
+              <th>Employee ID</th>
+              <th>Full Name</th>
+              <th>Email Address</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of pendingImportUsers(); track row.username) {
+            <tr>
+              <td>
+                <span class="employee-id-chip">{{ row.username }}</span>
+              </td>
+              <td class="font-semibold">{{ row.name }}</td>
+              <td class="text-sub">{{ row.email }}</td>
+              <td>
+                <span class="badge" [class.badge--admin]="row.role === 'admin'" [class.badge--user]="row.role !== 'admin'">
+                  {{ row.role === 'admin' ? 'Admin' : 'User' }}
+                </span>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-ghost" (click)="cancelImport()" [disabled]="isImporting()">Cancel</button>
+      <button type="button" class="btn btn-primary" (click)="confirmImport()" [disabled]="isImporting()">
+        {{ isImporting() ? 'Importing…' : 'Confirm & Import (' + pendingImportUsers().length + ')' }}
+      </button>
+    </div>
+  </div>
+</div>
+}

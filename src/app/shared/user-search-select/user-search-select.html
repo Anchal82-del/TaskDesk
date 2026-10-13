@@ -1,0 +1,134 @@
+<div class="user-select-field" #containerRef>
+  @if (label) {
+  <label [for]="idPrefix + '-input'" class="field-label">
+    {{ label }}@if (required) {<span class="required-mark">*</span>}
+  </label>
+  }
+
+  <div class="picker-container">
+    @if (selectedUser(); as user) {
+    <!-- Selected User Display Card -->
+    <div
+      class="selected-card"
+      [class.selected-card--error]="hasError"
+      [class.selected-card--disabled]="disabled"
+    >
+      <div class="selected-user-display">
+        <span
+          class="user-avatar user-avatar--sm"
+          [class.user-avatar--super]="isSuperAdmin(user)"
+          [class.user-avatar--admin]="!isSuperAdmin(user) && isAdmin(user)"
+        >
+          {{ getInitials(user.name) }}
+        </span>
+        <div class="selected-user-info">
+          <div class="selected-user-top">
+            <span class="selected-user-name">{{ user.name }}</span>
+            <span class="selected-user-id font-mono">{{ user.username }}</span>
+          </div>
+          <span class="selected-user-email">{{ user.email }}</span>
+        </div>
+      </div>
+
+      @if (!disabled) {
+      <button
+        type="button"
+        class="clear-btn"
+        (click)="clearSelection($event)"
+        title="Change user"
+        aria-label="Remove selected user"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      }
+    </div>
+    } @else {
+    <!-- Search Input Box (Shown when no user is selected) -->
+    <div
+      class="search-box-wrapper"
+      [class.search-box-wrapper--error]="hasError"
+      [class.search-box-wrapper--active]="isInputFocused()"
+      [class.search-box-wrapper--disabled]="disabled"
+      (click)="searchInput.focus()"
+    >
+      <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        #searchInput
+        [id]="idPrefix + '-input'"
+        type="text"
+        class="search-text-input"
+        [placeholder]="placeholder"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="onSearchChange($event)"
+        (focus)="onInputFocus()"
+        [disabled]="disabled"
+        autocomplete="off"
+      />
+      @if (searchQuery()) {
+      <button
+        type="button"
+        class="input-clear-query-btn"
+        (click)="searchQuery.set('')"
+        aria-label="Clear search input"
+      >
+        &times;
+      </button>
+      }
+    </div>
+    }
+
+    <!-- Dropdown appears ONLY when typing and results are available -->
+    @if (isDropdownOpen()) {
+    <div class="user-dropdown-panel" role="listbox">
+      <div class="dropdown-list">
+        @for (u of filteredUsers(); track u.id) {
+        <div
+          class="user-option-row"
+          (click)="selectUser(u)"
+          role="option"
+        >
+          <span
+            class="user-avatar"
+            [class.user-avatar--super]="isSuperAdmin(u)"
+            [class.user-avatar--admin]="!isSuperAdmin(u) && isAdmin(u)"
+          >
+            {{ getInitials(u.name) }}
+          </span>
+
+          <div class="user-details">
+            <div class="user-primary-line">
+              <span class="user-name">{{ u.name }}</span>
+              @if (isSuperAdmin(u)) {
+              <span class="role-chip role-chip--super">Super Admin</span>
+              } @else if (isAdmin(u)) {
+              <span class="role-chip role-chip--admin">Admin</span>
+              }
+            </div>
+            <!-- Secondary line: email · employee ID -->
+            <div class="user-secondary-line">
+              <span class="user-email">{{ u.email }}</span>
+              <span class="dot-separator">&middot;</span>
+              <span class="user-id font-mono">{{ u.username }}</span>
+            </div>
+          </div>
+        </div>
+        } @empty {
+        <div class="empty-results">
+          <p>No members found matching "{{ searchQuery() }}"</p>
+        </div>
+        }
+      </div>
+    </div>
+    }
+  </div>
+
+  @if (hasError && errorMessage) {
+  <div class="field-error">{{ errorMessage }}</div>
+  }
+</div>

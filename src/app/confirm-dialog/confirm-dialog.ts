@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output
+} from '@angular/core';
+import { ModalScrollLockService } from '@app/core/modal-scroll-lock.service';
 
 @Component({
   selector: 'app-confirm-dialog',
@@ -9,7 +19,9 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:keydown.escape)': 'onCancel()' }
 })
-export class ConfirmDialogComponent {
+export class ConfirmDialogComponent implements OnInit, OnDestroy {
+  private readonly scrollLock = inject(ModalScrollLockService);
+
   @Input() heading = 'Are you sure?';
   @Input() message = 'This action cannot be undone.';
   @Input() confirmLabel = 'Yes, continue';
@@ -22,6 +34,14 @@ export class ConfirmDialogComponent {
 
   get confirmText(): string {
     return this.isBusy ? 'Please wait…' : this.confirmLabel;
+  }
+
+  ngOnInit(): void {
+    this.scrollLock.lock();
+  }
+
+  ngOnDestroy(): void {
+    this.scrollLock.unlock();
   }
 
   onConfirm(): void {

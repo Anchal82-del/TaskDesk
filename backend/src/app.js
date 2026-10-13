@@ -29,9 +29,14 @@ app.use(
 app.use(
   rateLimit({
     windowMs: env.rateLimitWindowMs,
-    limit: env.rateLimitMax,
+    limit: env.nodeEnv === 'development' ? 10000 : env.rateLimitMax,
     standardHeaders: 'draft-7',
     legacyHeaders: false,
+    skip: (req) => {
+      if (env.nodeEnv === 'development') return true;
+      const ip = req.ip || req.connection?.remoteAddress || '';
+      return ip === '127.0.0.1' || ip === '::1' || ip.includes('127.0.0.1');
+    },
     message: {
       status: 'error',
       error: { code: 'TOO_MANY_REQUESTS', message: 'Too many requests, slow down.', details: [] }

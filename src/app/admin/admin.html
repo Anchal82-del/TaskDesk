@@ -1,0 +1,188 @@
+<div class="admin-page">
+  <div class="topbar">
+    <div>
+      <h1>Admin Console</h1>
+      <div class="sub">Review admin access requests and manage administrator accounts.</div>
+    </div>
+  </div>
+
+  <!-- Focused 2-Tab Navigation -->
+  <div class="admin-tabs-bar">
+    <button
+      type="button"
+      class="admin-tab"
+      [class.active]="activeTab() === 'requests'"
+      (click)="setActiveTab('requests')"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+      Access Requests
+      @if (pendingRequests().length > 0) {
+      <span class="tab-badge">{{ pendingRequests().length }}</span>
+      }
+    </button>
+
+    <button
+      type="button"
+      class="admin-tab"
+      [class.active]="activeTab() === 'admins'"
+      (click)="setActiveTab('admins')"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+      </svg>
+      Admin Accounts
+      <span class="tab-badge-sub">({{ adminAccounts().length }})</span>
+    </button>
+  </div>
+
+  <!-- TAB 1: Access Requests -->
+  @if (activeTab() === 'requests') {
+  <div class="admin-panel">
+    @if (pendingRequests().length > 0) {
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th class="col-id">Employee ID</th>
+            <th class="col-requester">Requester</th>
+            <th class="col-date">Requested At</th>
+            <th class="col-actions text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (req of pendingRequests(); track req.id) {
+          <tr [class.highlighted-row]="highlightedRequestId() === req.id" [id]="'request-row-' + req.id">
+            <td class="col-id">
+              <span class="mono-tag">{{ req.employeeId }}</span>
+            </td>
+            <td class="col-requester">
+              <div class="user-inline">
+                <span class="avatar-sm">
+                  {{ getInitials(req.requesterName) }}
+                </span>
+                <div>
+                  <div class="name-bold">{{ req.requesterName }}</div>
+                  <div class="sub-email">{{ req.requesterEmail }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="col-date">
+              <span class="date-text">{{ req.createdAt | date:'medium' }}</span>
+            </td>
+            <td class="col-actions text-right">
+              @if (isAdmin()) {
+              <div class="request-btn-group">
+                <button
+                  type="button"
+                  class="btn btn-primary btn-xs"
+                  [disabled]="processingRequestId() === req.id"
+                  (click)="approveRequest(req)"
+                >
+                  {{ processingRequestId() === req.id ? 'Approving…' : 'Approve' }}
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-xs"
+                  [disabled]="processingRequestId() === req.id"
+                  (click)="declineRequest(req)"
+                >
+                  Decline
+                </button>
+              </div>
+              } @else {
+              <span class="sub-email">Pending admin review</span>
+              }
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    } @else {
+    <div class="empty-requests">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <h4>No pending admin access requests</h4>
+      <p>All submitted requests have been reviewed.</p>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- TAB 2: Admin Accounts -->
+  @if (activeTab() === 'admins') {
+  <div class="admin-panel">
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th class="col-id">Employee ID</th>
+            <th class="col-requester">Name and Email</th>
+            <th class="col-actions text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (u of adminAccounts(); track u.id) {
+          <tr>
+            <td class="col-id">
+              <span class="mono-tag">{{ u.username }}</span>
+            </td>
+            <td class="col-requester">
+              <div class="user-inline">
+                <span
+                  class="avatar-sm"
+                  [class.avatar-sm--super]="isSuperAdminUser(u)"
+                  [class.avatar-sm--admin]="!isSuperAdminUser(u)"
+                >
+                  {{ getInitials(u.name) }}
+                </span>
+                <div>
+                  <div class="name-row">
+                    <span class="name-bold">{{ u.name }}</span>
+                    @if (isSuperAdminUser(u)) {
+                    <span class="badge badge--super">Super Admin</span>
+                    }
+                  </div>
+                  <div class="sub-email">{{ u.email }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="col-actions text-right">
+              @if (canRevokeAdmin(u)) {
+              <button
+                type="button"
+                class="btn btn-ghost btn-xs btn-danger-text"
+                (click)="confirmRevokeAdmin(u)"
+                title="Revoke Admin Access"
+              >
+                Revoke Admin Access
+              </button>
+              }
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  }
+</div>
+
+<!-- Revoke Admin Access Confirm Dialog -->
+@if (adminPendingRevoke()) {
+<app-confirm-dialog
+  heading="Revoke Administrator Access?"
+  [message]="revokeConfirmMessage()"
+  confirmLabel="Revoke Access"
+  [danger]="true"
+  [isBusy]="isRevoking()"
+  (confirmed)="executeRevoke()"
+  (cancelled)="cancelRevoke()"
+>
+</app-confirm-dialog>
+}

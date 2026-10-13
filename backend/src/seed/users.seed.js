@@ -10,27 +10,35 @@ module.exports = [
     name: 'Anchal',
     username: 'u541023',
     email: 'anchal@taskdesk.dev',
-    password: DEFAULT_PASSWORD_HASH
+    password: DEFAULT_PASSWORD_HASH,
+    role: 'admin',
+    accessRequested: false
   },
   {
     id: 2,
     name: 'Jyoti Singh',
     username: 'u541024',
     email: 'jyoti.singh@taskdesk.dev',
-    password: DEFAULT_PASSWORD_HASH
+    password: DEFAULT_PASSWORD_HASH,
+    role: 'user',
+    accessRequested: false
   },
   {
     id: 3,
     name: 'Vivek Kumar',
     username: 'u541025',
     email: 'vivek.kumar@taskdesk.dev',
-    password: DEFAULT_PASSWORD_HASH
+    password: DEFAULT_PASSWORD_HASH,
+    role: 'user',
+    accessRequested: false
   },
   {
     id: 4,
     name: 'Nikitha Amaresh',
     username: 'u541026',
     email: 'nikitha.amaresh@taskdesk.dev',
-    password: DEFAULT_PASSWORD_HASH
+    password: DEFAULT_PASSWORD_HASH,
+    role: 'user',
+    accessRequested: false
   }
 ];

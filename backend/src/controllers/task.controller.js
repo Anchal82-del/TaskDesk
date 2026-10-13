@@ -7,8 +7,25 @@ const { sendSuccess } = require('../utils/response');
 // service, choose the status code. No business rules here. Express 5 forwards errors from
 // async functions to the error middleware automatically, so no try/catch is needed.
 async function listTasks(req, res) {
-  const userId = req.user ? req.user.id : null;
-  const tasks = await taskService.getAllTasks(req.query, userId);
+  const user = req.user;
+  const userId = user ? user.id : null;
+  const isAdmin = Boolean(user && (user.role === 'admin' || user.username === 'u541023'));
+  const query = { ...req.query };
+
+  const requestedPersonal = query.scope === 'my' || query.all === 'false';
+
+  if (isAdmin) {
+    if (requestedPersonal) {
+      query.all = 'false';
+    } else {
+      query.all = 'true';
+    }
+  } else {
+    // Regular users can NEVER access all tasks, even if manually requested
+    query.all = 'false';
+  }
+
+  const tasks = await taskService.getAllTasks(query, userId);
   return sendSuccess(res, 200, tasks);
 }
 

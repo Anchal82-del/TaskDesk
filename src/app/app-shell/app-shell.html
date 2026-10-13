@@ -15,33 +15,86 @@
       </button>
       <div class="brand-mark">TaskDesk</div>
     </div>
+
     <div class="header-right">
       <app-notification-bell></app-notification-bell>
-      <button class="btn btn-ghost btn-sm" type="button" (click)="openLogoutConfirm()">
-        Logout
-      </button>
+
+      <div class="profile-menu-container">
+        <button
+          type="button"
+          class="avatar-btn"
+          [class.active]="isProfileDropdownOpen()"
+          (click)="toggleProfileDropdown($event)"
+          aria-haspopup="true"
+          [attr.aria-expanded]="isProfileDropdownOpen()"
+          [title]="currentUser()?.name || 'Account menu'"
+          [attr.aria-label]="currentUser()?.name || 'Account menu'"
+        >
+          <span
+            class="avatar-circle"
+            [class.avatar-circle--super]="isSuperAdmin()"
+            [class.avatar-circle--admin]="!isSuperAdmin() && isAdmin()"
+          >
+            {{ userInitials() }}
+          </span>
+        </button>
+
+        @if (isProfileDropdownOpen()) {
+        <div class="profile-dropdown" role="menu">
+          <div class="dropdown-links">
+            <button
+              type="button"
+              class="dropdown-item"
+              (click)="openProfileModal()"
+              role="menuitem"
+            >
+              <span>My Profile</span>
+            </button>
+
+            @if (isAdmin()) {
+              @if (isAdminProfile()) {
+              <button
+                type="button"
+                class="dropdown-item"
+                (click)="switchToUserProfile()"
+                role="menuitem"
+              >
+                <span>User</span>
+              </button>
+              } @else {
+              <button
+                type="button"
+                class="dropdown-item"
+                (click)="switchToAdminProfile()"
+                role="menuitem"
+              >
+                <span>Admin</span>
+              </button>
+              }
+            }
+
+            <div class="dropdown-divider"></div>
+
+            <button
+              type="button"
+              class="dropdown-item dropdown-item--logout"
+              (click)="openLogoutConfirm()"
+              role="menuitem"
+            >
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+        }
+      </div>
     </div>
   </header>
 
   <div class="app-shell" [class.sidebar-collapsed]="sidebarCollapsed">
     <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
       <nav class="sidebar-nav">
-        <a class="nav-item" routerLink="/dashboard" routerLinkActive="active">
-          <svg
-            class="ico"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            aria-hidden="true"
-          >
-            <rect x="3" y="3" width="7" height="7" rx="1.5" />
-            <rect x="14" y="3" width="7" height="7" rx="1.5" />
-            <rect x="3" y="14" width="7" height="7" rx="1.5" />
-            <rect x="14" y="14" width="7" height="7" rx="1.5" />
-          </svg>
-          <span class="nav-label">Tasks</span>
-        </a>
+        @if (isAdmin() && isAdminProfile()) {
+        <!-- Admin & Super Admin Profile: Users -> Admin Console -> Settings -> Tasks -->
         <a class="nav-item" routerLink="/users" routerLinkActive="active">
           <svg
             class="ico"
@@ -58,6 +111,21 @@
           </svg>
           <span class="nav-label">Users</span>
         </a>
+
+        <a class="nav-item" routerLink="/admin" routerLinkActive="active">
+          <svg
+            class="ico"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+          <span class="nav-label">Admin Console</span>
+        </a>
+
         <a class="nav-item" routerLink="/settings" routerLinkActive="active">
           <svg
             class="ico"
@@ -82,6 +150,67 @@
           </svg>
           <span class="nav-label">Settings</span>
         </a>
+
+        <a class="nav-item" routerLink="/dashboard" routerLinkActive="active">
+          <svg
+            class="ico"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+          <span class="nav-label">Tasks</span>
+        </a>
+        } @else {
+        <!-- User Profile: Tasks -> Settings (Users tab is removed) -->
+        <a class="nav-item" routerLink="/dashboard" routerLinkActive="active">
+          <svg
+            class="ico"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+          <span class="nav-label">Tasks</span>
+        </a>
+
+        <a class="nav-item" routerLink="/settings" routerLinkActive="active">
+          <svg
+            class="ico"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.9 2.9l-.1-.1
+                a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.6V21a2 2 0 11-4 0v-.1
+                a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.9-2.9l.1-.1
+                a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.6-1H3a2 2 0 110-4h.1
+                a1.7 1.7 0 001.6-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.9-2.9l.1.1
+                a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.6V3a2 2 0 114 0v.1
+                a1.7 1.7 0 001 1.6 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.9 2.9l-.1.1
+                a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.6 1H21a2 2 0 110 4h-.1
+                a1.7 1.7 0 00-1.6 1z"
+            />
+          </svg>
+          <span class="nav-label">Settings</span>
+        </a>
+        }
       </nav>
     </aside>
 
@@ -90,6 +219,102 @@
     </main>
   </div>
 </div>
+
+<!-- My Profile Modal -->
+@if (isProfileModalOpen()) {
+<div class="modal-overlay">
+  <div class="modal-backdrop" (click)="closeProfileModal()" aria-hidden="true"></div>
+  <div
+    class="modal profile-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="profile-modal-title"
+  >
+    <div class="modal-header">
+      <div class="profile-modal-header">
+        <span
+          class="avatar-circle avatar-circle--lg"
+          [class.avatar-circle--super]="isSuperAdmin()"
+          [class.avatar-circle--admin]="!isSuperAdmin() && isAdmin()"
+        >
+          {{ userInitials() }}
+        </span>
+        <div>
+          <h2 id="profile-modal-title">{{ currentUser()?.name }}</h2>
+          <div class="profile-modal-meta">
+            @if (isSuperAdmin()) {
+            <span class="badge badge--super">Super Admin</span>
+            } @else if (isAdmin()) {
+            <span class="badge badge--admin">Admin</span>
+            } @else {
+            <span class="badge badge--user">User</span>
+            }
+          </div>
+        </div>
+      </div>
+      <button class="modal-close" type="button" (click)="closeProfileModal()" aria-label="Close">
+        &times;
+      </button>
+    </div>
+
+    <div class="modal-body profile-body">
+      <div class="profile-info-list">
+        <div class="profile-info-row">
+          <span class="profile-field-label">Employee ID</span>
+          <span class="profile-field-value font-mono">{{ currentUser()?.username }}</span>
+        </div>
+        <div class="profile-info-row">
+          <span class="profile-field-label">Email Address</span>
+          <span class="profile-field-value">{{ currentUser()?.email }}</span>
+        </div>
+
+        @if (!isAdmin()) {
+        <div class="profile-request-section">
+          @if (isPendingRequest()) {
+          <div class="request-status-box request-status-box--pending">
+            <div class="request-status-details">
+              <span class="status-badge-pending">Request Pending</span>
+              <p class="request-status-desc">
+                Your request for administrator access has been submitted and is currently pending review by the Super Admin.
+              </p>
+            </div>
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm btn-danger-text"
+              (click)="openCancelRequestConfirm()"
+            >
+              Cancel Request
+            </button>
+          </div>
+          } @else {
+          <div class="request-prompt-box">
+            <div class="request-prompt-text">
+              <span class="prompt-title">Administrator Privileges</span>
+              <p class="prompt-desc">
+                Request elevated administrator permissions from the Super Admin.
+              </p>
+            </div>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              [disabled]="isSubmittingRequest()"
+              (click)="openRequestAccessConfirm()"
+            >
+              {{ isSubmittingRequest() ? 'Submitting…' : 'Request Admin Access' }}
+            </button>
+          </div>
+          }
+        </div>
+        }
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-ghost" (click)="closeProfileModal()">Close</button>
+    </div>
+  </div>
+</div>
+}
 
 @if (isLogoutConfirmOpen) {
 <app-confirm-dialog
@@ -100,6 +325,29 @@
   [isBusy]="isLoggingOut"
   (confirmed)="confirmLogout()"
   (cancelled)="cancelLogout()"
+>
+</app-confirm-dialog>
+}
+
+@if (isConfirmRequestOpen()) {
+<app-confirm-dialog
+  heading="Request Admin Access?"
+  message="Are you sure you want to request administrator privileges? The Super Admin will review your request."
+  confirmLabel="Submit Request"
+  (confirmed)="confirmRequestAccess()"
+  (cancelled)="isConfirmRequestOpen.set(false)"
+>
+</app-confirm-dialog>
+}
+
+@if (isConfirmCancelOpen()) {
+<app-confirm-dialog
+  heading="Cancel Admin Access Request?"
+  message="Are you sure you want to cancel your pending administrator access request?"
+  confirmLabel="Cancel Request"
+  [danger]="true"
+  (confirmed)="confirmCancelAccess()"
+  (cancelled)="isConfirmCancelOpen.set(false)"
 >
 </app-confirm-dialog>
 }

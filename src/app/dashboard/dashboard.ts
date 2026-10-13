@@ -81,6 +81,9 @@ export class DashboardComponent {
   private readonly auth = inject(AuthService);
 
   readonly currentUser = this.auth.currentUser;
+  readonly isAdmin = this.auth.isAdmin;
+  readonly isAdminView = this.taskService.isAdminViewActive;
+
   readonly projects = this.projectService.getProjects();
   readonly statusOptions = TASK_STATUS_OPTIONS;
   readonly priorityOptions = TASK_PRIORITY_OPTIONS;

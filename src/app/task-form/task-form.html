@@ -8,7 +8,12 @@
     aria-labelledby="task-form-title"
   >
     <div class="modal-header">
-      <h2 id="task-form-title">{{ heading }}</h2>
+      <div class="modal-header-title">
+        @if (task) {
+        <span class="task-id-chip">#{{ task.id }}</span>
+        }
+        <h2 id="task-form-title">{{ heading }}</h2>
+      </div>
       <button class="modal-close" type="button" (click)="onCancel()" aria-label="Close">
         &times;
       </button>
@@ -31,7 +36,7 @@
           }
         </div>
 
-        <div class="modal-grid">
+        <div class="modal-grid-3">
           <div class="field">
             <label for="status">Status<span class="required-mark">*</span></label>
             <select
@@ -49,6 +54,7 @@
             <div class="field-error">Status is required.</div>
             }
           </div>
+
           <div class="field">
             <label for="priority">Priority<span class="required-mark">*</span></label>
             <select
@@ -66,6 +72,7 @@
             <div class="field-error">Priority is required.</div>
             }
           </div>
+
           <div class="field">
             <label for="projectId">Project<span class="required-mark">*</span></label>
             <select
@@ -83,50 +90,46 @@
             <div class="field-error">Project is required.</div>
             }
           </div>
-          <div class="field">
-            <label for="reviewerId">Reviewer<span class="required-mark">*</span></label>
-            <select
-              class="input"
-              [class.input-error]="isInvalid('reviewerId') || hasReviewerAssigneeConflict"
-              id="reviewerId"
-              formControlName="reviewerId"
-            >
-              <option [ngValue]="null" disabled>Select reviewer</option>
-              @for (u of availableReviewers; track u.id) {
-              <option [ngValue]="u.id">
-                {{ u.name }}
-              </option>
-              }
-            </select>
-            @if (isInvalid('reviewerId')) {
-            <div class="field-error">Reviewer is required.</div>
-            }
-            @if (hasReviewerAssigneeConflict) {
-            <div class="field-error">Reviewer cannot be the assignee.</div>
-            }
-          </div>
-          <div class="field">
-            <label for="assigneeId">Assignee<span class="required-mark">*</span></label>
-            <select
-              class="input"
-              [class.input-error]="isInvalid('assigneeId') || hasReviewerAssigneeConflict"
-              id="assigneeId"
-              formControlName="assigneeId"
-            >
-              <option [ngValue]="null" disabled>Select assignee</option>
-              @for (u of availableAssignees; track u.id) {
-              <option [ngValue]="u.id">
-                {{ u.name }}
-              </option>
-              }
-            </select>
-            @if (isInvalid('assigneeId')) {
-            <div class="field-error">Assignee is required.</div>
-            }
-            @if (hasReviewerAssigneeConflict) {
-            <div class="field-error">Assignee cannot be the reviewer.</div>
-            }
-          </div>
+        </div>
+
+        <div class="modal-grid-2">
+          <app-user-search-select
+            label="Reviewer"
+            [required]="true"
+            placeholder="Type name, email, or ID..."
+            [users]="availableReviewers"
+            [selectedUserId]="taskForm.controls.reviewerId.value"
+            [hasError]="isInvalid('reviewerId') || hasReviewerAssigneeConflict"
+            [errorMessage]="
+              isInvalid('reviewerId')
+                ? 'Reviewer is required.'
+                : hasReviewerAssigneeConflict
+                ? 'Reviewer cannot be the assignee.'
+                : ''
+            "
+            idPrefix="reviewer"
+            (userSelected)="onReviewerSelected($event)"
+            (blurred)="taskForm.controls.reviewerId.markAsTouched()"
+          ></app-user-search-select>
+
+          <app-user-search-select
+            label="Assignee"
+            [required]="true"
+            placeholder="Type name, email, or ID..."
+            [users]="availableAssignees"
+            [selectedUserId]="taskForm.controls.assigneeId.value"
+            [hasError]="isInvalid('assigneeId') || hasReviewerAssigneeConflict"
+            [errorMessage]="
+              isInvalid('assigneeId')
+                ? 'Assignee is required.'
+                : hasReviewerAssigneeConflict
+                ? 'Assignee cannot be the reviewer.'
+                : ''
+            "
+            idPrefix="assignee"
+            (userSelected)="onAssigneeSelected($event)"
+            (blurred)="taskForm.controls.assigneeId.markAsTouched()"
+          ></app-user-search-select>
         </div>
 
         <div class="field">

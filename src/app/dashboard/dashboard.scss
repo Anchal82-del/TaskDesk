@@ -8,13 +8,43 @@
   gap: 20px;
   flex-wrap: wrap;
 }
+.topbar-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
 .topbar h1 {
   font-size: 26px;
+}
+.admin-view-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(14, 148, 136, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(14, 148, 136, 0.25);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  letter-spacing: -0.01em;
+}
+.chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 .topbar .sub {
   color: var(--ink-soft);
   font-size: 14px;
   margin-top: 4px;
+}
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 /* ---------- toolbar (items 5, 8) ---------- */

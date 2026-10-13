@@ -18,36 +18,42 @@
     </div>
 
     <div class="modal-body">
-      <dl class="modal-grid detail-grid">
+      <div class="modal-grid-3 detail-row">
         <div class="detail-item">
-          <dt>Status</dt>
-          <dd>
+          <div class="detail-label">Status</div>
+          <div class="detail-val">
             <span class="badge" [ngClass]="statusClass[task.status]">{{
               statusLabel[task.status]
             }}</span>
-          </dd>
+          </div>
         </div>
+
         <div class="detail-item">
-          <dt>Priority</dt>
-          <dd>
+          <div class="detail-label">Priority</div>
+          <div class="detail-val">
             <span class="priority-tag" [ngClass]="priorityClass[task.priority]">{{
               priorityLabel[task.priority]
             }}</span>
-          </dd>
+          </div>
         </div>
+
         <div class="detail-item">
-          <dt>Project</dt>
-          <dd>{{ projectName }}</dd>
+          <div class="detail-label">Project</div>
+          <div class="detail-val">{{ projectName }}</div>
         </div>
+      </div>
+
+      <div class="modal-grid-2 detail-row">
         <div class="detail-item">
-          <dt>Reviewer</dt>
-          <dd>{{ reviewerName }}</dd>
+          <div class="detail-label">Reviewer</div>
+          <div class="detail-val">{{ reviewerName }}</div>
         </div>
+
         <div class="detail-item">
-          <dt>Assignee</dt>
-          <dd>{{ assigneeName }}</dd>
+          <div class="detail-label">Assignee</div>
+          <div class="detail-val">{{ assigneeName }}</div>
         </div>
-      </dl>
+      </div>
 
       <div class="detail-section">
         <div class="detail-label">Description</div>

@@ -1,9 +1,25 @@
 <div class="topbar">
   <div>
-    <h1>Welcome back{{ currentUser() ? ', ' + currentUser()?.name : '' }}!</h1>
-    <div class="sub">Here's what's on your plate today — let's keep things moving.</div>
+    <div class="topbar-title-row">
+      <h1>Welcome back{{ currentUser() ? ', ' + currentUser()?.name : '' }}!</h1>
+      @if (isAdminView()) {
+      <span class="admin-view-chip">
+        <span class="chip-dot"></span>
+        Admin View &middot; All Tasks
+      </span>
+      }
+    </div>
+    <div class="sub">
+      @if (isAdminView()) {
+      Viewing all organization tasks across team members.
+      } @else {
+      Here's what's on your plate today — let's keep things moving.
+      }
+    </div>
   </div>
-  <button class="btn btn-primary" type="button" (click)="openAddModal()">+ New task</button>
+  <div class="topbar-actions">
+    <button class="btn btn-primary" type="button" (click)="openAddModal()">+ New task</button>
+  </div>
 </div>
 
 <app-task-stats [counts]="counts()"></app-task-stats>

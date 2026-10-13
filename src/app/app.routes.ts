@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '@app/auth-guard';
+import { adminGuard } from '@app/admin-guard';
 
 // Every page is lazy-loaded so it is only downloaded when the user first visits it.
 export const routes: Routes = [
@@ -18,7 +19,13 @@ export const routes: Routes = [
         loadComponent: () => import('@app/dashboard/dashboard').then((m) => m.DashboardComponent)
       },
       {
+        path: 'admin',
+        canActivate: [adminGuard],
+        loadComponent: () => import('@app/admin/admin').then((m) => m.AdminComponent)
+      },
+      {
         path: 'users',
+        canActivate: [adminGuard],
         loadComponent: () => import('@app/users/users').then((m) => m.UsersComponent)
       },
       {

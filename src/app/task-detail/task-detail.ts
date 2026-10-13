@@ -4,6 +4,8 @@ import {
   EventEmitter,
   inject,
   Input,
+  OnDestroy,
+  OnInit,
   Output
 } from '@angular/core';
 import { NgClass } from '@angular/common';
@@ -16,6 +18,7 @@ import {
 } from '@app/task.constants';
 import { Task } from '@app/task.model';
 import { UserService } from '@app/user';
+import { ModalScrollLockService } from '@app/core/modal-scroll-lock.service';
 
 // Read-only view of a task. Changes are made through the Edit form.
 @Component({
@@ -27,9 +30,10 @@ import { UserService } from '@app/user';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:keydown.escape)': 'onClose()' }
 })
-export class TaskDetailComponent {
+export class TaskDetailComponent implements OnInit, OnDestroy {
   private readonly userService = inject(UserService);
   private readonly projectService = inject(ProjectService);
+  private readonly scrollLock = inject(ModalScrollLockService);
 
   @Input({ required: true }) task!: Task;
   @Output() closed = new EventEmitter<void>();
@@ -47,6 +51,14 @@ export class TaskDetailComponent {
   }
   get projectName(): string {
     return this.projectService.getProjectById(this.task.projectId)?.name ?? '—';
+  }
+
+  ngOnInit(): void {
+    this.scrollLock.lock();
+  }
+
+  ngOnDestroy(): void {
+    this.scrollLock.unlock();
   }
 
   onClose(): void {

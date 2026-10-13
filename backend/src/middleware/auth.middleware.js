@@ -1,6 +1,7 @@
 'use strict';
 
 const authService = require('../services/auth.service');
+const userRepository = require('../repositories/user.repository');
 const AppError = require('../utils/AppError');
 
 function extractToken(req) {
@@ -18,7 +19,8 @@ async function authenticate(req, res, next) {
       throw AppError.unauthorized('Authentication token is required.');
     }
     const decoded = await authService.verifyToken(token);
-    req.user = decoded;
+    const freshUser = await userRepository.findById(decoded.id);
+    req.user = freshUser || decoded;
     return next();
   } catch (err) {
     return next(err);
@@ -30,7 +32,8 @@ async function optionalAuthenticate(req, res, next) {
     const token = extractToken(req);
     if (token) {
       const decoded = await authService.verifyToken(token);
-      req.user = decoded;
+      const freshUser = await userRepository.findById(decoded.id);
+      req.user = freshUser || decoded;
     } else {
       req.user = null;
     }

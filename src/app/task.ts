@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, computed, effect, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, catchError, map, of, shareReplay, tap } from 'rxjs';
 import { environment } from '@env/environment';
@@ -22,6 +22,8 @@ export class TaskService {
   private readonly http = inject(HttpClient, { optional: true });
   private readonly auth = inject(AuthService);
   private readonly baseUrl = `${environment.apiUrl}/tasks`;
+
+  readonly isAdminViewActive = computed(() => this.auth.isAdmin() && this.auth.adminModeActive());
 
   private tasks: Task[] = [
     {
@@ -111,9 +113,32 @@ export class TaskService {
   private hasLoadedFromApi = false;
 
   constructor() {
+    effect(() => {
+      // Re-evaluate when authentication state or admin profile mode changes
+      this.auth.currentUser();
+      this.auth.adminModeActive();
+      this.tasksSubject.next(this.tasks);
+      if (this.http) {
+        this.refreshTasks().subscribe();
+      }
+    });
+
     if (this.http) {
       this.refreshTasks().subscribe();
     }
+  }
+
+  setAdminView(active?: boolean): void {
+    if (typeof active === 'boolean') {
+      this.auth.setAdminMode(active);
+    }
+    if (this.http) {
+      this.refreshTasks().subscribe();
+    }
+  }
+
+  toggleAdminView(): boolean {
+    return this.isAdminViewActive();
   }
 
   getTasks(): Observable<Task[]> {
@@ -129,7 +154,12 @@ export class TaskService {
     if (!this.http) {
       return of(this.filterForCurrentUser(this.tasks));
     }
-    return this.http.get<ApiResponse<Task[]>>(this.baseUrl).pipe(
+
+    const scopeParam = this.isAdminViewActive() ? 'scope=all' : 'scope=my';
+    const token = this.auth.getToken();
+    const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+
+    return this.http.get<ApiResponse<Task[]>>(`${this.baseUrl}?${scopeParam}`, { headers }).pipe(
       map((res) => res.data),
       tap((remoteTasks) => {
         if (Array.isArray(remoteTasks)) {
@@ -238,6 +268,10 @@ export class TaskService {
   private filterForCurrentUser(taskList: Task[]): Task[] {
     const user = this.auth.getCurrentUser();
     if (!user) return taskList;
+    const isAuthorizedAdmin = user.role === 'admin' || user.username === 'u541023';
+    if (isAuthorizedAdmin && this.isAdminViewActive()) {
+      return taskList;
+    }
     return taskList.filter((t) => t.reviewerId === user.id || t.assigneeId === user.id);
   }
 }

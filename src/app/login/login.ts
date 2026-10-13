@@ -28,8 +28,7 @@ export class LoginComponent {
 
   loginForm = this.fb.nonNullable.group({
     username: ['', [Validators.required]],
-    password: ['', [Validators.required]],
-    remember: [false]
+    password: ['', [Validators.required]]
   });
 
   get passwordInputType(): string {
@@ -42,10 +41,6 @@ export class LoginComponent {
 
   get submitLabel(): string {
     return this.isSubmitting ? 'Signing in…' : 'Sign in';
-  }
-
-  onForgotPassword(event: Event): void {
-    event.preventDefault();
   }
 
   togglePassword(): void {

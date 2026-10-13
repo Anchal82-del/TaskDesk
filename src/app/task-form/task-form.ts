@@ -6,6 +6,7 @@ import {
   EventEmitter,
   inject,
   Input,
+  OnDestroy,
   OnInit,
   Output
 } from '@angular/core';
@@ -23,6 +24,7 @@ import { TASK_PRIORITY_OPTIONS, TASK_STATUS_OPTIONS } from '@app/task.constants'
 import { Task, TaskInput, TaskPriority, TaskStatus } from '@app/task.model';
 import { User } from '@app/user.model';
 import { UserService } from '@app/user';
+import { ModalScrollLockService } from '@app/core/modal-scroll-lock.service';
 
 type FieldName = 'title' | 'priority' | 'status' | 'reviewerId' | 'assigneeId' | 'projectId';
 
@@ -41,22 +43,25 @@ function reviewerNotAssigneeValidator(control: AbstractControl): ValidationError
   return null;
 }
 
+import { UserSearchSelectComponent } from '@app/shared/user-search-select/user-search-select';
+
 @Component({
   selector: 'app-task-form',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, UserSearchSelectComponent],
   templateUrl: './task-form.html',
   styleUrl: './task-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:keydown.escape)': 'onCancel()' }
 })
-export class TaskFormComponent implements OnInit {
+export class TaskFormComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly userService = inject(UserService);
   private readonly projectService = inject(ProjectService);
   private readonly auth = inject(AuthService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly scrollLock = inject(ModalScrollLockService);
 
   @Input() task: Task | null = null;
   @Output() save = new EventEmitter<TaskInput>();
@@ -135,7 +140,20 @@ export class TaskFormComponent implements OnInit {
     return control.invalid && control.touched;
   }
 
+  onReviewerSelected(userId: number | null): void {
+    this.taskForm.controls.reviewerId.setValue(userId);
+    this.taskForm.controls.reviewerId.markAsTouched();
+    this.cdr.markForCheck();
+  }
+
+  onAssigneeSelected(userId: number | null): void {
+    this.taskForm.controls.assigneeId.setValue(userId);
+    this.taskForm.controls.assigneeId.markAsTouched();
+    this.cdr.markForCheck();
+  }
+
   ngOnInit(): void {
+    this.scrollLock.lock();
     this.taskForm.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
@@ -153,6 +171,10 @@ export class TaskFormComponent implements OnInit {
         projectId: this.task.projectId
       });
     }
+  }
+
+  ngOnDestroy(): void {
+    this.scrollLock.unlock();
   }
 
   onSubmit(): void {
