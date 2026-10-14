@@ -141,6 +141,31 @@ async function setRequestAccess(id, requested = true) {
   return cleanDoc(user, false);
 }
 
+async function updateUser(id, data) {
+  const numericId = Number(id);
+  const target = await findById(numericId);
+  if (!target) return null;
+
+  const updateFields = {};
+  if (data.name !== undefined) updateFields.name = data.name.trim();
+  if (data.email !== undefined) updateFields.email = (data.email || '').trim().toLowerCase();
+  if (data.role !== undefined) updateFields.role = data.role === 'admin' ? 'admin' : 'user';
+
+  if (isConnected()) {
+    const doc = await UserModel.findOneAndUpdate(
+      { id: numericId },
+      updateFields,
+      { new: true, runValidators: true }
+    ).lean();
+    return cleanDoc(doc, false);
+  }
+
+  const user = users.find((u) => u.id === numericId);
+  if (!user) return null;
+  Object.assign(user, updateFields);
+  return cleanDoc(user, false);
+}
+
 const DEFAULT_PASSWORD_HASH = '$2b$10$QhrXZp0.g/g2rqhWjmURbOeks3zzWDUxAjQdKOsqgirNpR7qM6Iwi';
 
 async function bulkCreate(userList) {
@@ -218,6 +243,7 @@ module.exports = {
   bulkCreate,
   deleteById,
   updateRole,
+  updateUser,
   setRequestAccess,
   reset
 };

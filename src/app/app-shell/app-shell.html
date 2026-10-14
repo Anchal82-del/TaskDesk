@@ -275,7 +275,7 @@
             <div class="request-status-details">
               <span class="status-badge-pending">Request Pending</span>
               <p class="request-status-desc">
-                Your request for administrator access has been submitted and is currently pending review by the Super Admin.
+                Your request for administrator access has been submitted and is currently pending review by an admin.
               </p>
             </div>
             <button
@@ -291,7 +291,7 @@
             <div class="request-prompt-text">
               <span class="prompt-title">Administrator Privileges</span>
               <p class="prompt-desc">
-                Request elevated administrator permissions from the Super Admin.
+                Request elevated administrator permissions from an admin.
               </p>
             </div>
             <button
@@ -332,7 +332,7 @@
 @if (isConfirmRequestOpen()) {
 <app-confirm-dialog
   heading="Request Admin Access?"
-  message="Are you sure you want to request administrator privileges? The Super Admin will review your request."
+  message="Are you sure you want to request administrator privileges? An admin will review your request."
   confirmLabel="Submit Request"
   (confirmed)="confirmRequestAccess()"
   (cancelled)="isConfirmRequestOpen.set(false)"

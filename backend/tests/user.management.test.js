@@ -123,4 +123,111 @@ describe('user management: create, bulk import, and delete', () => {
     });
     assert.equal(res.status, 403);
   });
+
+  it('records upload logs during bulk import and allows admin to fetch them', async () => {
+    // Perform bulk import with duplicate to test status and records breakdown
+    const bulkRes = await fetch(`${baseUrl}/api/v1/users/bulk`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({
+        fileName: 'Q4_New_Hires.xlsx',
+        users: [
+          {
+            name: 'Aakash Verma',
+            username: 'u541103',
+            email: 'aakash.verma@taskdesk.dev',
+            role: 'user'
+          },
+          {
+            name: 'Pooja Patel Duplicate',
+            username: 'u541102', // duplicate from earlier test
+            email: 'pooja.patel@taskdesk.dev',
+            role: 'admin'
+          }
+        ]
+      })
+    });
+    assert.equal(bulkRes.status, 200);
+    const bulkBody = await bulkRes.json();
+    assert.equal(bulkBody.data.created.length, 1);
+    assert.equal(bulkBody.data.skipped.length, 1);
+    assert.ok(bulkBody.data.log);
+    assert.equal(bulkBody.data.log.fileName, 'Q4_New_Hires.xlsx');
+    assert.equal(bulkBody.data.log.addedCount, 1);
+    assert.equal(bulkBody.data.log.duplicateCount, 1);
+
+    // Now fetch logs as admin
+    const logsRes = await fetch(`${baseUrl}/api/v1/users/upload-logs`, {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    assert.equal(logsRes.status, 200);
+    const logsBody = await logsRes.json();
+    assert.ok(Array.isArray(logsBody.data));
+    assert.ok(logsBody.data.length >= 2);
+    const latest = logsBody.data[0];
+    assert.equal(latest.fileName, 'Q4_New_Hires.xlsx');
+    assert.equal(latest.uploadedBy.username, 'u541023');
+    assert.equal(latest.totalRecords, 2);
+    assert.equal(latest.addedCount, 1);
+    assert.equal(latest.duplicateCount, 1);
+    assert.equal(latest.records.length, 2);
+  });
+
+  it('rejects regular users from accessing upload logs with 403', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/users/upload-logs`, {
+      headers: { Authorization: `Bearer ${userToken}` }
+    });
+    assert.equal(res.status, 403);
+  });
+
+  it('allows admin to edit a regular user', async () => {
+    const target = await userRepository.findByUsername('u541099'); // Sara Khan created earlier
+    assert.ok(target);
+
+    const res = await fetch(`${baseUrl}/api/v1/users/${target.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({
+        name: 'Sara Khan Updated',
+        email: 'sara.updated@taskdesk.dev',
+        role: 'user'
+      })
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.data.name, 'Sara Khan Updated');
+    assert.equal(body.data.email, 'sara.updated@taskdesk.dev');
+  });
+
+  it('rejects appointed admin from editing Super Admin u541023', async () => {
+    // Login as appointed admin u454880 or create an admin token
+    const appointedAdmin = await userRepository.findByUsername('u454880');
+    let appointedToken;
+    if (appointedAdmin) {
+      const loginRes = await authService.login('u454880', 'Password@123');
+      appointedToken = loginRes.token;
+    }
+
+    if (appointedToken) {
+      const superAdmin = await userRepository.findByUsername('u541023');
+      const res = await fetch(`${baseUrl}/api/v1/users/${superAdmin.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${appointedToken}`
+        },
+        body: JSON.stringify({
+          name: 'Hacked Super Admin',
+          role: 'user'
+        })
+      });
+      assert.equal(res.status, 403);
+    }
+  });
 });

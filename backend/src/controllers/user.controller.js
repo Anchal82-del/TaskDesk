@@ -1,6 +1,7 @@
 'use strict';
 
 const userRepository = require('../repositories/user.repository');
+const userUploadLogRepository = require('../repositories/user-upload-log.repository');
 const accessRequestRepository = require('../repositories/access-request.repository');
 const { sendSuccess } = require('../utils/response');
 const AppError = require('../utils/AppError');
@@ -151,13 +152,67 @@ async function bulkCreateUsers(req, res) {
     throw AppError.forbidden('Only administrators can import users.');
   }
 
-  const { users } = req.body;
+  const { users, fileName = 'users_import.xlsx', fileCount = 1 } = req.body;
   if (!Array.isArray(users) || users.length === 0) {
     throw AppError.badRequest('Users array is required.');
   }
 
   const result = await userRepository.bulkCreate(users);
-  return sendSuccess(res, 200, result);
+
+  const records = [
+    ...(result.created || []).map((u) => ({
+      name: u.name,
+      username: u.username,
+      email: u.email,
+      role: u.role || 'user',
+      status: 'added',
+      reason: 'Successfully imported'
+    })),
+    ...(result.skipped || []).map((s) => ({
+      name: s.name || '',
+      username: s.username || '',
+      email: s.email || '',
+      role: s.role || 'user',
+      status: 'duplicate',
+      reason: s.reason || 'User with this ID or email already exists'
+    }))
+  ];
+
+  const addedCount = (result.created || []).length;
+  const duplicateCount = (result.skipped || []).length;
+  const status =
+    addedCount === users.length
+      ? 'completed'
+      : addedCount > 0
+        ? 'partial'
+        : 'duplicate_only';
+
+  const logEntry = await userUploadLogRepository.createLog({
+    uploadedBy: {
+      id: caller.id || 1,
+      name: caller.name || caller.username || 'Administrator',
+      username: caller.username
+    },
+    fileName: String(fileName || 'users_import.xlsx'),
+    fileCount: Number(fileCount) || 1,
+    totalRecords: users.length,
+    addedCount,
+    duplicateCount,
+    status,
+    records
+  });
+
+  return sendSuccess(res, 200, { ...result, log: logEntry });
+}
+
+async function listUploadLogs(req, res) {
+  const caller = req.user;
+  if (!caller || (caller.role !== 'admin' && caller.username !== SUPER_ADMIN_USERNAME)) {
+    throw AppError.forbidden('Only administrators can access user upload logs.');
+  }
+
+  const logs = await userUploadLogRepository.findAll();
+  return sendSuccess(res, 200, logs);
 }
 
 async function deleteUser(req, res) {
@@ -184,11 +239,59 @@ async function deleteUser(req, res) {
   return sendSuccess(res, 200, { message: 'User deleted successfully', user: targetUser });
 }
 
+async function updateUser(req, res) {
+  const caller = req.user;
+  if (!caller || (caller.role !== 'admin' && caller.username !== SUPER_ADMIN_USERNAME)) {
+    throw AppError.forbidden('Only administrators can update users.');
+  }
+
+  const targetId = Number(req.params.id);
+  const targetUser = await userRepository.findById(targetId);
+  if (!targetUser) {
+    throw AppError.notFound(`User with id ${targetId} was not found.`);
+  }
+
+  // Super Admin cannot be edited by admins
+  if (targetUser.username === SUPER_ADMIN_USERNAME && caller.username !== SUPER_ADMIN_USERNAME) {
+    throw AppError.forbidden('The Super Admin account cannot be edited by administrators.');
+  }
+
+  const { name, email, role } = req.body;
+  if (!name || !name.trim()) {
+    throw AppError.badRequest('User name is required.');
+  }
+
+  if (email && email.trim().toLowerCase() !== (targetUser.email || '').toLowerCase()) {
+    const existing = await userRepository.findByUsername(email.trim().toLowerCase());
+    if (existing && existing.id !== targetId) {
+      throw AppError.conflict('A user with this email address already exists.');
+    }
+  }
+
+  let normalizedRole = targetUser.role;
+  if (role) {
+    if (targetUser.username === SUPER_ADMIN_USERNAME && role !== 'admin') {
+      throw AppError.forbidden('The Super Admin role cannot be changed.');
+    }
+    normalizedRole = role === 'admin' ? 'admin' : 'user';
+  }
+
+  const updated = await userRepository.updateUser(targetId, {
+    name: name.trim(),
+    email: email ? email.trim().toLowerCase() : targetUser.email,
+    role: normalizedRole
+  });
+
+  return sendSuccess(res, 200, updated);
+}
+
 module.exports = {
   listUsers,
   getUser,
   createUser,
+  updateUser,
   bulkCreateUsers,
+  listUploadLogs,
   deleteUser,
   updateUserRole,
   requestAccess,

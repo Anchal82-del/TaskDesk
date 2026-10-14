@@ -74,7 +74,8 @@
   color: var(--ink-faint);
 }
 .toolbar-row select.input {
-  width: auto;
+  width: 140px;
+  min-width: 140px;
 }
 
 /* ---------- loading (item 9) ---------- */
